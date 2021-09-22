@@ -39,6 +39,14 @@ class GameObject {
 
   appendChild(child) {
     this._children.push(child);
+    child.setParent(this);
+
+    child.getComponentNamesList().forEach((name) => {
+      const parentComponent = this.getComponent(name);
+      if (parentComponent) {
+        child.getComponent(name).parent = parentComponent;
+      }
+    });
   }
 
   getChildren() {
