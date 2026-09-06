@@ -3,22 +3,23 @@ title: "Your first scene"
 description: "Build a scene in the editor, put an actor in it, and run the game."
 ---
 
-This walkthrough takes the empty project created by
-[`dacha-workbench init`](/getting-started/installation/) and produces a running game with
-one visible actor. It assumes no prior knowledge of the editor.
+The [generated project](/getting-started/installation/) already contains a scene. This
+walkthrough builds a second one from nothing, so that every step of the editor is
+something you did rather than something you were given. It assumes no prior knowledge of
+the editor.
 
 ## Open the editor
 
 ```bash
-npx dacha-workbench
+npm run editor
 ```
 
-On first launch there is no scene, so the viewport is empty and the explorer shows an
-empty project tree.
+The explorer shows the generated `level` scene. Leave it alone; you are about to add
+another beside it.
 
 :::note[Screenshot needed]
-The editor on first launch against a freshly initialised project: empty viewport, empty
-explorer, inspector showing nothing selected.
+The editor opened against a generated project: the level scene in the explorer, the player
+and walls in the viewport.
 :::
 
 ## Create a scene
@@ -26,8 +27,10 @@ explorer, inspector showing nothing selected.
 Add a scene from the explorer and give it a name. A scene is a level, a menu or any other
 distinct game state, and it is the container every actor lives in.
 
-Then mark it as the **start scene**. The engine refuses to start without one, so this step
-is not optional. It corresponds to `startSceneId` in the configuration.
+One scene in the project has to be the **start scene** — the engine refuses to start
+without one, and it corresponds to `startSceneId` in the configuration. The generated
+project already names `level`, so mark your new scene as the start scene when you want to
+run it instead, and switch back afterwards.
 
 :::note[Screenshot needed]
 The explorer with one scene created and marked as the start scene.
@@ -71,8 +74,10 @@ Press play in the editor to run the scene using the real engine.
 The scene running inside the editor, with the playback controls active.
 :::
 
-To run it outside the editor you need a bundler and an entry point that constructs the
-engine. The shortest version:
+Outside the editor, `npm run dev` runs whichever scene `startSceneId` names.
+
+A project assembled by hand needs a bundler and an entry point that constructs the engine.
+The shortest version:
 
 ```ts
 import { Engine, Renderer, Transform, Sprite } from 'dacha';

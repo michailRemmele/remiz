@@ -7,18 +7,34 @@ A dacha project separates the data the engine consumes from the TypeScript that 
 it. Most of the layout is a suggestion. One part of it, the file-name suffixes, is relied
 on by tooling and is not.
 
-## After `init`
+## What the scaffolder generates
 
 ```
 data/
-  assets/
-  data.json
-dacha-workbench.config.js
+  data.json                    the configuration the engine consumes
+  assets/                      textures, audio, fonts
+src/
+  index.ts                     collects your classes and starts the engine
+  import-all.ts
+  events/index.ts              your event names and their types
+  game/
+    components/movement.component.ts
+    systems/movement.system.ts
+  ui/                          the HTML overlay, mounted through the UI bridge
+dacha-workbench.config.cjs
+index.html
+vite.config.ts
 package.json
 ```
 
-That is the minimum the editor needs: somewhere to read and write the configuration, and
-somewhere to keep assets.
+The editor itself needs only two of these: somewhere to read and write the configuration,
+and somewhere to keep assets. Everything else is the game.
+
+One thing in that tree is not where you would guess: **`data/assets` is also the bundler's
+public directory**. `vite.config.ts` sets `publicDir: 'data/assets'`, which is what makes
+`"src": "player.png"` in the configuration resolve both in development and in a build. The
+editor writes assets there and the bundler serves them from there — one directory, not
+two.
 
 ## What a project grows into
 
@@ -37,8 +53,8 @@ src/
       camera/camera.behavior.ts
     events/index.ts            project event names
   ui/                          optional, mounted through the UI bridge
-dacha-workbench.config.js
-webpack.config.js
+dacha-workbench.config.cjs
+vite.config.ts
 ```
 
 Nothing forces the `game` and `ui` split, or the one-directory-per-class arrangement. Use
@@ -68,10 +84,14 @@ in full on [Scripts & auto-registration](/writing-game-code/auto-registration/).
 `data/data.json` is the game. It is read by the engine at runtime and written by the
 editor as you work. You can edit it by hand, but you rarely want to.
 
-`dacha-workbench.config.js` is the editor's own settings: where the configuration lives,
+`dacha-workbench.config.cjs` is the editor's own settings: where the configuration lives,
 where assets live, which project events exist, and how autosave behaves. It is never read
 by the engine. Every key is documented in the
 [configuration reference](/editor/config-reference/).
+
+The `.cjs` extension is not decoration. The editor loads the file with `require`, and the
+generated project declares `"type": "module"`, which would make a `.js` file an ES module
+that exports nothing the editor can read.
 
 ## What to commit
 

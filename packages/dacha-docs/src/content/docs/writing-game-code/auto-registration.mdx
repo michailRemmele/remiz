@@ -45,29 +45,31 @@ Your entry point globs for each suffix:
 
 ```ts
 const gameComponents = importAll(
-  require.context('./', true, /.component.ts$/),
+  import.meta.glob('./**/*.component.ts', { eager: true }),
 ) as ComponentConstructor[];
 const gameSystems = importAll(
-  require.context('./', true, /.system.ts$/),
+  import.meta.glob('./**/*.system.ts', { eager: true }),
 ) as SystemConstructor[];
 const gameBehaviors = importAll(
-  require.context('./', true, /.behavior.ts$/),
+  import.meta.glob('./**/*.behavior.ts', { eager: true }),
 ) as BehaviorConstructor[];
 ```
 
-`importAll` is three lines and lives in your project, not in the engine:
+`importAll` is two lines and lives in your project, not in the engine:
 
 ```ts
-export const importAll = (
-  context: __WebpackModuleApi.RequireContext,
-): unknown[] => {
-  const modules = context.keys().map(context);
-  return modules.map((module) => (module as Record<string, unknown>).default);
-};
+export const importAll = (modules: Record<string, unknown>): unknown[] =>
+  Object.values(modules).map(
+    (module) => (module as Record<string, unknown>).default,
+  );
 ```
 
-`require.context` is a webpack feature, so its type comes from `@types/webpack-env`. Add
-it to your dev dependencies or TypeScript will not know the symbol.
+The pattern has to be a literal at the call site. Vite rewrites `import.meta.glob` at build
+time, so it cannot come from a variable or be wrapped in a helper of your own.
+
+With webpack the equivalent is `require.context('./', true, /\.component\.ts$/)`, and
+`importAll` takes a `__WebpackModuleApi.RequireContext` instead — which also means adding
+`@types/webpack-env` to your dev dependencies, or TypeScript will not know the symbol.
 
 ## Handing them to the engine
 
@@ -96,9 +98,14 @@ Worth being clear about: the engine has no glob, no file scanner and no knowledg
 directory layout. It gets arrays. Everything above is your project's bundler doing the
 collecting.
 
-That means it is not tied to webpack. With Vite the equivalent is `import.meta.glob`; with
-another bundler, whatever that bundler offers. The suffix convention is worth keeping
-whichever you use, because the editor's script generation writes files that follow it.
+That means it is not tied to any one bundler. The generated project uses Vite's
+`import.meta.glob`; webpack offers `require.context`; another bundler will offer something
+else. The suffix convention is worth keeping whichever you use, because the editor's script
+generation writes files that follow it.
+
+The editor is equally indifferent. It compiles your scripts with its own bundler, driven by
+the regexes in the editor configuration, and asks only two things of a file: the suffix,
+and a default export.
 
 ## The round trip
 

@@ -38,8 +38,8 @@ These live under the `performance` entry in
 | `maxFixedUpdatesPerFrame` | 5 | Ceiling on catch-up steps in one frame |
 
 :::note
-`dacha-workbench init` writes `maxFPS: 0` into a new project's configuration. Zero and the
-engine's internal default both mean uncapped.
+A generated project's configuration carries `maxFPS: 0`. Zero and the engine's internal
+default both mean uncapped.
 :::
 
 The last two settings are not tuning knobs so much as safety rails. When a tab goes into

@@ -73,8 +73,8 @@ map:
 `sorting` controls draw order and the layers actors can be assigned to. `performance`
 tunes the game loop; see [the game loop](/concepts/game-loop/) for what each value does.
 
-A fresh project starts with exactly these two, created by
-`dacha-workbench init`.
+A generated project starts with these, and the editor adds the rest — `physics`,
+`audioGroups` — the first time it saves.
 
 ## Hand-editing
 
