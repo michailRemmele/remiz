@@ -7,6 +7,8 @@ const RENAME = {
   _gitignore: '.gitignore',
 };
 
+const SKIP = new Set(['.DS_Store', 'Thumbs.db']);
+
 const isEmptyDir = (dir) =>
   !fs.existsSync(dir) || fs.readdirSync(dir).length === 0;
 
@@ -21,6 +23,10 @@ const copyTemplate = (src, dest) => {
   fs.mkdirSync(dest, { recursive: true });
 
   fs.readdirSync(src, { withFileTypes: true }).forEach((entry) => {
+    if (SKIP.has(entry.name)) {
+      return;
+    }
+
     const from = path.join(src, entry.name);
     const to = path.join(dest, RENAME[entry.name] ?? entry.name);
 

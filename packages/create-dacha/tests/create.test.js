@@ -4,7 +4,12 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-const { create, toPackageName, isEmptyDir } = require('../lib/create');
+const {
+  create,
+  toPackageName,
+  isEmptyDir,
+  TEMPLATE_DIR,
+} = require('../lib/create');
 
 const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'create-dacha-'));
 
@@ -64,6 +69,20 @@ test('create names the package after the target directory, not the path', () => 
     fs.readFileSync(path.join(dir, 'package.json'), 'utf8'),
   );
   assert.strictEqual(manifest.name, 'my-game');
+});
+
+test('create does not copy OS junk files out of the template', () => {
+  const junk = path.join(TEMPLATE_DIR, '.DS_Store');
+  fs.writeFileSync(junk, 'junk');
+
+  const dir = path.join(tmp(), 'my-game');
+  try {
+    create({ targetDir: dir });
+  } finally {
+    fs.rmSync(junk, { force: true });
+  }
+
+  assert.ok(!fs.existsSync(path.join(dir, '.DS_Store')));
 });
 
 test('create refuses a non-empty target directory', () => {

@@ -19,7 +19,7 @@ another beside it.
 
 :::note[Screenshot needed]
 The editor opened against a generated project: the level scene in the explorer, the player
-and walls in the viewport.
+on the grass background in the viewport.
 :::
 
 ## Create a scene

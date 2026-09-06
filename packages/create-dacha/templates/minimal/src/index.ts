@@ -8,7 +8,6 @@ import {
   Animator,
   Transform,
   Sprite,
-  Shape,
   Camera,
   KeyboardControl,
   Texture,
@@ -41,7 +40,6 @@ const engine = new Engine({
   components: [
     Transform,
     Sprite,
-    Shape,
     Camera,
     KeyboardControl,
     Animatable,
