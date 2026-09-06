@@ -1,0 +1,105 @@
+---
+title: "What is dacha"
+description: "An overview of the dacha game engine, what it does, and how you work with it."
+---
+
+import { Image } from 'astro:assets';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+import inspectorShot from '../../../assets/editor/inspector-project-components.png';
+
+dacha is a game engine for 2D browser games, with a visual editor. It comes in two parts,
+and you use both:
+
+- **`dacha`** — the engine. An npm package your game imports.
+- **`dacha-workbench`** — the editor. A desktop application you point at your project.
+
+Your game is an ordinary web application: you add the engine as a dependency and build it
+with your own bundler. It imports the configuration like any other module, so a save in
+the editor reaches the running game through your dev server.
+
+## The game is data
+
+A dacha game is not assembled by calling constructors in a startup script. The scenes, the
+actors in them, the components on those actors and their values, the templates they are
+built from, the systems that run and the options they take — all of it is a description
+that the engine reads at startup and turns into a running world.
+
+That description is one JSON file in your project, and you are not expected to write it.
+The editor does.
+
+## The editor is a separate application
+
+You launch the editor yourself, and it reads your project:
+
+- **the configuration**, so you build scenes by dragging actors around;
+- **your assets directory**, so an image you drop in becomes selectable straight away;
+- **your own components and systems**, so they show up in the inspector with their fields
+  laid out, alongside the built-in ones.
+
+That last one is what makes the editor useful on a real project rather than on a demo, and
+it needs no wiring from you.
+
+<figure class="screenshot screenshot--panel">
+  <Image
+    src={inspectorShot}
+    alt="The inspector showing a Platform Block component with Mass and Type fields and a Weapon component with Cooldown, Damage, Range and Projectile fields, listed alongside the built-in Mesh, Mouse Control and Transform components."
+  />
+  <figcaption>
+    Project components in the inspector. Platform Block and Weapon are defined in the
+    game's own source; the editor draws their fields from the class.
+  </figcaption>
+</figure>
+
+<LinkCard
+  title="Scripts & auto-registration"
+  description="How a class you write becomes a class the editor knows about."
+  href="/writing-game-code/auto-registration/"
+/>
+
+## What comes with it
+
+- **Built-in systems** for rendering, physics, character movement, interpolation,
+  animation, audio, keyboard and mouse input, cameras, behaviors and mounting a user
+  interface. They are ordinary systems: enable the ones you need and write your own
+  alongside them.
+- **Script generation.** Create a component, system or behavior from the editor and it
+  lands in your project as a file, already visible to both the game and the inspector.
+- **Templates** — reusable actor blueprints, placed at edit time or spawned at runtime.
+
+## Where it fits
+
+dacha suits 2D browser games where you want a visual scene editor without adopting a large
+engine, and where the game logic is comfortable in TypeScript. It has been used to build
+[games for game jams](/resources/examples/), which is the workload it is shaped around:
+small teams, short timelines, and a browser as the target.
+
+## When not to use it
+
+:::caution[Before version 1.0]
+Breaking changes land between minor versions. There are
+[migration notes](/reference/migration/) for each one, but you should expect to read them.
+:::
+
+- **It is 2D only.** There is no 3D pipeline and none is planned.
+- **The target is the browser.** There is no console export and no native desktop or
+  mobile packaging, though browser games do run on mobile.
+- **It is a small project.** There is no asset store, no plugin marketplace, and no
+  commercial support.
+
+If any of those is a requirement, a larger engine will serve you better.
+
+## Next
+
+<CardGrid>
+  <LinkCard
+    title="How it works"
+    description="One project, two programs, and the file they meet at."
+    href="/introduction/how-it-works/"
+  />
+  <LinkCard
+    title="Installation & setup"
+    description="Scaffold a project and get the game and the editor running."
+    href="/getting-started/installation/"
+  />
+</CardGrid>

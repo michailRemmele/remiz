@@ -9,6 +9,7 @@ const INITIAL_DATA = {
   scenes: [],
   systems: [],
   templates: [],
+  assets: [],
   globalOptions: [
     {
       name: 'sorting',

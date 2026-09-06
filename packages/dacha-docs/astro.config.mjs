@@ -8,6 +8,9 @@ const site = process.env.SITE_URL ?? 'https://dachajs.org';
 export default defineConfig({
   site,
   base: '/',
+  redirects: {
+    '/introduction/glossary': '/reference/glossary/',
+  },
   integrations: [
     starlight({
       title: 'dacha',
@@ -59,7 +62,6 @@ export default defineConfig({
           items: [
             { slug: 'introduction/what-is-dacha' },
             { slug: 'introduction/how-it-works' },
-            { slug: 'introduction/glossary' },
           ],
         },
         {
@@ -134,6 +136,7 @@ export default defineConfig({
         {
           label: 'Reference',
           items: [
+            { slug: 'reference/glossary' },
             { slug: 'reference/components' },
             { slug: 'reference/migration' },
             { label: 'API Reference', link: '/api/' },
