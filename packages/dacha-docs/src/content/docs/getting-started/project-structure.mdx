@@ -49,21 +49,18 @@ site root: an asset at `data/assets/player.png` is referenced as `player.png` in
 | `*.system.ts` | A system |
 | `*.behavior.ts` | A behavior |
 
-A file named correctly is collected into the game. A file named `movement.ts` is not, and
-the class it defines will simply be absent at runtime with no build error. The class must
-also be the **default export**.
+A file named correctly is collected into the game. A file named `movement.ts` is not — the
+class it defines never reaches the engine, and nothing catches that at build time; you find
+out when the game runs. The class must also be the **default export**.
 
 Components and systems are the engine's own vocabulary; a
-[behavior](/systems/behaviors/) is not. It belongs to one of the built-in systems,
-`BehaviorSystem`, and holds logic scoped to a single actor. Shaders and filter effects are
-the renderer's equivalent. A system is free to define entities of its own like this, and
-the editor collects them the same way it collects everything else.
+[behavior](/systems/behaviors/) is not — it belongs to `BehaviorSystem` and holds logic
+scoped to a single actor. A system may define entities of its own like that, and they are
+collected the same way.
 
-The editor scans for the same three, plus `*.asset.ts`, `*.widget.ts`, `*.shader.ts` and
-`*.filter-effect.ts`. Its patterns are configurable; see the
-[configuration reference](/editor/config-reference/).
-
-The mechanism is worth reading in full on
+The editor scans for the same three suffixes plus a few of its own, and every pattern is
+configurable — see the [configuration reference](/editor/config-reference/). The mechanism
+is worth reading in full on
 [scripts & auto-registration](/writing-game-code/auto-registration/).
 
 ## Being collected is not the same as running

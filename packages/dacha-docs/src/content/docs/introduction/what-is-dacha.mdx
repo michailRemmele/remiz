@@ -4,7 +4,7 @@ description: "An overview of the Dacha game engine, what it does, and how you wo
 ---
 
 import { Image } from 'astro:assets';
-import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+import { LinkCard } from '@astrojs/starlight/components';
 
 import editorShot from '../../../assets/editor/editor-overview.png';
 
@@ -74,11 +74,6 @@ small teams, short timelines, and a browser as the target.
 
 ## When not to use it
 
-:::caution[Before version 1.0]
-Breaking changes land between minor versions. There are
-[migration notes](/reference/migration/) for each one, but you should expect to read them.
-:::
-
 - **It is 2D only.** There is no 3D pipeline and none is planned.
 - **The target is the browser.** There is no console export and no native desktop or
   mobile packaging, though browser games do run on mobile.
@@ -87,17 +82,10 @@ Breaking changes land between minor versions. There are
 
 If any of those is a requirement, a larger engine will serve you better.
 
-## Next
+:::caution[Before version 1.0]
+Breaking changes land between minor versions. There are
+[migration notes](/reference/migration/) for each one, but you should expect to read them.
+:::
 
-<CardGrid>
-  <LinkCard
-    title="How it works"
-    description="One project, two programs, and the file they meet at."
-    href="/introduction/how-it-works/"
-  />
-  <LinkCard
-    title="Installation & setup"
-    description="Scaffold a project and get the game and the editor running."
-    href="/getting-started/installation/"
-  />
-</CardGrid>
+If none of that rules it out, [installation & setup](/getting-started/installation/) gets a
+project running in a few minutes.

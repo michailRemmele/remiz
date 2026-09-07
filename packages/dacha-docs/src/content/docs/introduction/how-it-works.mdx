@@ -3,19 +3,20 @@ title: "How it works"
 description: "One project, two programs, and the file they meet at."
 ---
 
-import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+import { LinkCard } from '@astrojs/starlight/components';
 import DocVideo from '../../../components/DocVideo.astro';
 import livePreviewPoster from '../../../assets/editor/editor-live-preview.poster.webp';
 import TwoProcesses from '../../../components/diagrams/TwoProcesses.astro';
 import FrameDiagram from '../../../components/diagrams/FrameDiagram.astro';
 
-Two programs sit around a Dacha project. Your own toolchain builds and serves the game;
-the editor is launched separately against the same directory. They meet at one file.
+Two programs work on a Dacha project. Your own toolchain builds and serves the game;
+the editor is launched separately against the same directory. They meet at the project's
+configuration.
 
 <TwoProcesses />
 
-The two programs never talk to each other; they take turns over that file. That is enough
-for an edit-and-see loop:
+The two programs never talk to each other: one writes that configuration, the other reads
+it. That is enough for an edit-and-see loop:
 
 <DocVideo
   slug="editor-live-preview"
@@ -28,19 +29,19 @@ for an edit-and-see loop:
 
 ## The configuration is the game
 
-The configuration is one JSON file — `data/data.json` by default. Here is a scene with a
-single actor in it, abridged, to show the shape of what the editor produces:
+In the generated project the configuration lives in `data/data.json`. Here is a scene with
+a single actor in it, abridged, to show the shape of what the editor produces:
 
 ```json
 {
-  "startSceneId": "b8f1…",
+  "startSceneId": "690e…",
   "scenes": [
     {
-      "id": "b8f1…",
-      "name": "island-level",
+      "id": "690e…",
+      "name": "level",
       "actors": [
         {
-          "id": "4",
+          "id": "2190…",
           "name": "background",
           "children": [],
           "components": [
@@ -56,8 +57,8 @@ single actor in it, abridged, to show the shape of what the editor produces:
               "name": "Sprite",
               "config": {
                 "src": "grass-tile.png",
-                "width": 320,
-                "height": 320,
+                "width": 256,
+                "height": 256,
                 "fit": "repeat",
                 "sortingLayer": "background"
               }
@@ -71,7 +72,7 @@ single actor in it, abridged, to show the shape of what the editor produces:
     { "name": "CameraSystem", "options": { "windowNodeId": "root" } },
     {
       "name": "Renderer",
-      "options": { "windowNodeId": "root", "backgroundColor": "#000" }
+      "options": { "windowNodeId": "root", "backgroundColor": "#1a1a1a" }
     }
   ]
 }
@@ -79,7 +80,7 @@ single actor in it, abridged, to show the shape of what the editor produces:
 
 Notice there is no logic anywhere: the file says what exists, never what happens.
 
-## Your game builds the engine
+## You assemble the engine
 
 The logic lives in your code. You hand the engine the classes the configuration draws on,
 and it builds the world:
@@ -107,8 +108,17 @@ void engine.play();
 ```
 
 That is the whole shape of an entry point. The generated project's version lists a few
-more built-ins than this, and nothing else. `config` is imported like any other module, so
-a save in the editor reaches the running game through your dev server.
+more built-ins, and collects your own classes with a glob instead of naming them one by
+one. `config` is imported like any other module, so a save in the editor reaches the
+running game through your dev server.
+
+## The editor reads the same project
+
+The editor learns about your components and systems by scanning your source for files
+matching a set of patterns, importing them, and letting the decorators on each class
+register it along with the fields the inspector should draw — the mechanism is
+[scripts & auto-registration](/writing-game-code/auto-registration/). It reads your assets
+directory the same way.
 
 ## Inside a frame
 
@@ -118,34 +128,12 @@ systems in two separate phases.
 <FrameDiagram />
 
 **`update`** runs once per rendered frame and receives a variable time delta.
-**`fixedUpdate`** runs on its own clock, at a rate that does not follow the frame rate, so
-that a game behaves the same on a 60 Hz laptop and a 144 Hz monitor. When you write a
-system you choose the phase.
+**`fixedUpdate`** runs on its own clock, independent of the frame rate, so that a game
+behaves the same on a 60 Hz laptop and a 144 Hz monitor. When you write a system you
+choose the phase.
 
 <LinkCard
   title="The game loop & lifecycle"
   description="Both clocks in full, the settings that tune them, and the exact order the lifecycle hooks fire in."
   href="/concepts/game-loop/"
 />
-
-## The editor reads the same project
-
-The editor learns about your components and systems by scanning your source for files
-matching a set of patterns, importing them, and letting the decorators on each class
-register it along with the fields the inspector should draw. It reads your assets directory
-the same way.
-
-## Next
-
-<CardGrid>
-  <LinkCard
-    title="Core concepts"
-    description="Actors, components, systems and behaviors."
-    href="/concepts/ecs/"
-  />
-  <LinkCard
-    title="Installation & setup"
-    description="Scaffold a project and get the game and the editor running."
-    href="/getting-started/installation/"
-  />
-</CardGrid>

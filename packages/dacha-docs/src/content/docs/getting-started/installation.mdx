@@ -3,13 +3,7 @@ title: "Installation & setup"
 description: "Scaffold a project, and get the game and the editor running side by side."
 ---
 
-import {
-  Steps,
-  Tabs,
-  TabItem,
-  LinkCard,
-  CardGrid,
-} from '@astrojs/starlight/components';
+import { Steps } from '@astrojs/starlight/components';
 
 By the end of this page you have a playable game running in a browser tab and the editor
 open against the same project.
@@ -22,25 +16,11 @@ Node 22.12 or newer. Nothing else — the project template brings its own build 
 
 <Steps>
 
-1. Create the project. {/* TODO(template): publish create-dacha before release */}
+1. Create the project.
 
-   <Tabs syncKey="pkg">
-     <TabItem label="npm">
-       ```bash
-       npm create dacha@latest my-game
-       ```
-     </TabItem>
-     <TabItem label="pnpm">
-       ```bash
-       pnpm create dacha my-game
-       ```
-     </TabItem>
-     <TabItem label="yarn">
-       ```bash
-       yarn create dacha my-game
-       ```
-     </TabItem>
-   </Tabs>
+   ```bash
+   npm create dacha@latest my-game
+   ```
 
    Leave the name off and it asks for one.
 
@@ -106,18 +86,3 @@ The editor looks for `dacha-workbench.config.js` next to your `package.json`. If
 project sets `"type": "module"`, name the file `.cjs` and pass it explicitly, the way the
 template does: `dacha-workbench --config dacha-workbench.config.cjs`.
 :::
-
-## Next
-
-<CardGrid>
-  <LinkCard
-    title="Your first scene"
-    description="Change the scene in the editor and watch the running game follow."
-    href="/getting-started/first-scene/"
-  />
-  <LinkCard
-    title="Project structure"
-    description="What lives where, and which conventions the tooling relies on."
-    href="/getting-started/project-structure/"
-  />
-</CardGrid>

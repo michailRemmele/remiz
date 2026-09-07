@@ -4,7 +4,7 @@ description: "Change the template's scene in the editor, and add an actor of you
 ---
 
 import { Image } from 'astro:assets';
-import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
+import { Steps } from '@astrojs/starlight/components';
 
 import actorShot from '../../../assets/editor/first-scene-actor.png';
 
@@ -17,9 +17,10 @@ The editor opens on the template's one scene, `level`, with three actors in it. 
 in the scene tree and the inspector shows its components — every actor has a `Transform`,
 which holds position, rotation and scale, and then whatever else it was given:
 
-- **camera** — a `Camera`. It is what the viewport looks through: its `Transform` sets
-  where the view is centred and the component's `zoom` how close in it is. A scene without
-  one still draws, centred on the origin at 1&times; zoom.
+- **camera** — a `Camera`. It is what the *game* looks through, not the editor's own view,
+  which you pan and zoom independently: its `Transform` sets where the view is centred and
+  the component's `zoom` how close in it is. A scene without one still draws, centred on
+  the origin at 1&times; zoom.
 - **player** — a `Sprite` to draw, `KeyboardControl` to turn keys into events, `Animatable`
   to cycle the sprite's frames, and `Movement`, a component from `src/game/` rather than
   from the engine.
@@ -30,7 +31,7 @@ which holds position, rotation and scale, and then whatever else it was given:
 Select **player** and open its `Movement` component. Set `speed` to `500` and look at the
 browser tab: it has already reloaded, and the player is faster.
 
-That loop is the whole workflow. The editor saved `data/data.json`, your entry point
+That loop is the whole workflow. The editor autosaved `data/data.json`, your entry point
 imports that file, and Vite reloaded the page.
 
 `Movement` is not built in. It is [a component in the
@@ -50,9 +51,9 @@ engine's here.
    The button acts on whatever is selected: with an actor selected instead of the scene,
    the new one becomes its child.
 
-2. Add a `Sprite` component to it.
+2. Add a `Sprite` to it with *Add Component*, at the foot of the inspector.
 
-3. Point the sprite at an image. Anything in `data/assets/` is selectable, and a file you
+3. Point its `src` at an image. Anything in `data/assets/` is selectable, and a file you
    drop in there appears without restarting the editor.
 
 </Steps>
@@ -69,18 +70,3 @@ engine's here.
 </figure>
 
 Drag it in the viewport, or type coordinates into `Transform`. Either way the tab follows.
-
-## Next
-
-<CardGrid>
-  <LinkCard
-    title="Project structure"
-    description="What lives where, and which conventions the tooling relies on."
-    href="/getting-started/project-structure/"
-  />
-  <LinkCard
-    title="Writing a component"
-    description="Add a component of your own once the built-in ones stop being enough."
-    href="/writing-game-code/components/"
-  />
-</CardGrid>
