@@ -68,7 +68,7 @@ whole subtree unless you pass `false` as the second argument to limit the search
 direct children.
 
 For finding actors by what they *have* rather than what they are called, use a query
-instead. That is what systems do; see [ECS in dacha](/concepts/ecs/).
+instead. That is what systems do; see [ECS in Dacha](/concepts/ecs/).
 
 ## Templates and spawning
 

@@ -9,6 +9,7 @@ working with the hierarchy, and the tools that make placement precise.
 ## What this page will cover
 
 - Creating and switching scenes
+- Choosing the start scene, which lives in Project settings rather than the scene tree
 - Adding actors, empty or from a template
 - Arranging the hierarchy
 - Selection, including multiple selection

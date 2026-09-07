@@ -15,6 +15,7 @@ const engine = new Engine({
   config,
   systems: [PhysicsSystem],
   components: [Transform, Collider, RigidBody],
+  assets: [],
 });
 ```
 

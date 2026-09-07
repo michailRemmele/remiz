@@ -1,0 +1,87 @@
+---
+title: "Project structure"
+description: "What lives where in a Dacha project, and which conventions the tooling relies on."
+---
+
+import { FileTree } from '@astrojs/starlight/components';
+
+A Dacha project separates the data the engine consumes from the TypeScript that extends it.
+Most of the layout is a suggestion; the file-name suffixes are not.
+
+## The layout
+
+<FileTree>
+
+- data/
+  - **data.json** the game, written by the editor
+  - assets/ textures, audio, fonts
+- src/
+  - **index.ts** collects your classes and starts the engine
+  - import-all.ts the glob helper `index.ts` uses
+  - events/
+    - index.ts your event types
+  - game/
+    - components/
+      - movement.component.ts
+    - systems/
+      - movement.system.ts
+  - ui/ the HTML overlay, optional
+- dacha-workbench.config.cjs
+- vite.config.ts
+- tsconfig.json
+- index.html
+
+</FileTree>
+
+Nothing forces the `game` and `ui` split or the one-file-per-class arrangement. Group the
+code however suits the project.
+
+`data/assets/` is Vite's `publicDir` in the template, so files there are served from the
+site root: an asset at `data/assets/player.png` is referenced as `player.png` in a sprite.
+
+## The suffixes are not decoration
+
+`src/index.ts` globs your source for these endings and hands what it finds to the engine:
+
+| Suffix | Declares |
+| --- | --- |
+| `*.component.ts` | A component |
+| `*.system.ts` | A system |
+| `*.behavior.ts` | A behavior |
+
+A file named correctly is collected into the game. A file named `movement.ts` is not, and
+the class it defines will simply be absent at runtime with no build error. The class must
+also be the **default export**.
+
+Components and systems are the engine's own vocabulary; a
+[behavior](/systems/behaviors/) is not. It belongs to one of the built-in systems,
+`BehaviorSystem`, and holds logic scoped to a single actor. Shaders and filter effects are
+the renderer's equivalent. A system is free to define entities of its own like this, and
+the editor collects them the same way it collects everything else.
+
+The editor scans for the same three, plus `*.asset.ts`, `*.widget.ts`, `*.shader.ts` and
+`*.filter-effect.ts`. Its patterns are configurable; see the
+[configuration reference](/editor/config-reference/).
+
+The mechanism is worth reading in full on
+[scripts & auto-registration](/writing-game-code/auto-registration/).
+
+## Being collected is not the same as running
+
+This catches people out. The glob makes a system **available** to the engine. A system only
+**runs** if it is also listed in `systems` in `data/data.json`, which is what the editor's
+Systems tab edits.
+
+Components have no such list: a component runs wherever an actor carries it. A behavior
+sits between the two — it runs only if `BehaviorSystem` is in `systems` **and** an actor's
+`Behaviors` component names it. In the template the system is enabled already.
+
+## The two configuration files
+
+`data/data.json` is the game. The engine reads it at runtime and the editor writes it as
+you work. It is generated, but it is not build output: commit it, along with the assets
+under `data/` that it references.
+
+`dacha-workbench.config.cjs` is the editor's own settings: where the configuration lives,
+where assets live, which patterns to scan for, how autosave behaves. The engine never reads
+it. Every key is documented in the [configuration reference](/editor/config-reference/).

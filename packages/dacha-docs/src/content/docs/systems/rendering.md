@@ -10,12 +10,13 @@ across levels.
 ## Registering it
 
 ```ts
-import { Engine, Renderer, Transform, Sprite, Camera } from 'dacha';
+import { Engine, Renderer, Transform, Sprite, Camera, Texture } from 'dacha';
 
 const engine = new Engine({
   config,
   systems: [Renderer],
   components: [Transform, Sprite, Camera],
+  assets: [Texture],
 });
 ```
 

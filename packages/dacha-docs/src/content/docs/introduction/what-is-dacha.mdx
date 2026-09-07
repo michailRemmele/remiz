@@ -1,32 +1,25 @@
 ---
-title: "What is dacha"
-description: "An overview of the dacha game engine, what it does, and how you work with it."
+title: "What is Dacha"
+description: "An overview of the Dacha game engine, what it does, and how you work with it."
 ---
 
 import { Image } from 'astro:assets';
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 
-import inspectorShot from '../../../assets/editor/inspector-project-components.png';
+import editorShot from '../../../assets/editor/editor-overview.png';
 
-dacha is a game engine for 2D browser games, with a visual editor. It comes in two parts,
-and you use both:
+Dacha is a game engine for 2D browser games, with a visual editor. It has two parts, and you use both:
 
 - **`dacha`** — the engine. An npm package your game imports.
 - **`dacha-workbench`** — the editor. A desktop application you point at your project.
 
-Your game is an ordinary web application: you add the engine as a dependency and build it
-with your own bundler. It imports the configuration like any other module, so a save in
-the editor reaches the running game through your dev server.
+Your game is an ordinary web application: you add the engine as a dependency and build it with a bundler of your choice.
 
 ## The game is data
 
-A dacha game is not assembled by calling constructors in a startup script. The scenes, the
-actors in them, the components on those actors and their values, the templates they are
-built from, the systems that run and the options they take — all of it is a description
-that the engine reads at startup and turns into a running world.
+A Dacha game is not defined by a startup script that constructs its world. The game itself is a description: its scenes, actors, components, templates, systems and configuration are all data. The engine reads that description at startup and turns it into a running world.
 
-That description is one JSON file in your project, and you are not expected to write it.
-The editor does.
+This description is stored as JSON in your project, and you are not expected to write it by hand. The editor does.
 
 ## The editor is a separate application
 
@@ -40,14 +33,18 @@ You launch the editor yourself, and it reads your project:
 That last one is what makes the editor useful on a real project rather than on a demo, and
 it needs no wiring from you.
 
-<figure class="screenshot screenshot--panel">
+It writes to your project too: ask it for a new component, system or behavior and the file
+lands in your source, already visible to both the game and the inspector.
+
+<figure class="screenshot">
   <Image
-    src={inspectorShot}
-    alt="The inspector showing a Platform Block component with Mass and Type fields and a Weapon component with Cooldown, Damage, Range and Projectile fields, listed alongside the built-in Mesh, Mouse Control and Transform components."
+    src={editorShot}
+    alt="The editor: the scene tree on the left listing camera, player and background; the game's grass field with the player sprite in the viewport; the inspector on the right showing the player's Animatable, Keyboard Control, Movement, Sprite and Transform components."
   />
   <figcaption>
-    Project components in the inspector. Platform Block and Weapon are defined in the
-    game's own source; the editor draws their fields from the class.
+    The editor: the scene tree, the viewport, and the inspector for the selected actor.
+    `Movement` there is a component from the game's own source, listed among the engine's
+    without any distinction.
   </figcaption>
 </figure>
 
@@ -61,15 +58,16 @@ it needs no wiring from you.
 
 - **Built-in systems** for rendering, physics, character movement, interpolation,
   animation, audio, keyboard and mouse input, cameras, behaviors and mounting a user
-  interface. They are ordinary systems: enable the ones you need and write your own
-  alongside them.
-- **Script generation.** Create a component, system or behavior from the editor and it
-  lands in your project as a file, already visible to both the game and the inspector.
-- **Templates** — reusable actor blueprints, placed at edit time or spawned at runtime.
+  interface.
+- **Built-in components** for them to read — transforms, sprites, meshes, text, shapes,
+  colliders, rigid and character bodies, cameras, audio sources and the rest.
+
+Nothing about them is privileged: they are the same kind of class you write yourself.
+Enable the systems you need, ignore the others, and add your own alongside them.
 
 ## Where it fits
 
-dacha suits 2D browser games where you want a visual scene editor without adopting a large
+Dacha suits 2D browser games where you want a visual scene editor without adopting a large
 engine, and where the game logic is comfortable in TypeScript. It has been used to build
 [games for game jams](/resources/examples/), which is the workload it is shaped around:
 small teams, short timelines, and a browser as the target.

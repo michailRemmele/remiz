@@ -3,14 +3,14 @@ title: "Glossary"
 description: "Short definitions of the terms used throughout this documentation."
 ---
 
-dacha borrows vocabulary from entity-component-system architectures but does not use it
-identically. Each term below is defined as dacha uses it.
+Dacha borrows vocabulary from entity-component-system architectures but does not use it
+identically. Each term below is defined as Dacha uses it.
 
 ### Actor
 
 The main object in a scene: a container of components with an id, a name and optional
 children. Every actor is created with a `Transform`. Where a classic ECS says *entity*,
-dacha says *actor*. See [actors](/concepts/actors/).
+Dacha says *actor*. See [actors](/concepts/actors/).
 
 ### ActorQuery
 
@@ -50,7 +50,7 @@ startup. See [the configuration](/concepts/configuration/).
 
 The base class that Actor, Scene and World share. It provides the id, the name, the
 parent/child hierarchy and the ability to send and receive events. You rarely refer to it
-directly. See [ECS in dacha](/concepts/ecs/).
+directly. See [ECS in Dacha](/concepts/ecs/).
 
 ### Fixed update
 

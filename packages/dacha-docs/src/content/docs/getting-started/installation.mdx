@@ -1,0 +1,123 @@
+---
+title: "Installation & setup"
+description: "Scaffold a project, and get the game and the editor running side by side."
+---
+
+import {
+  Steps,
+  Tabs,
+  TabItem,
+  LinkCard,
+  CardGrid,
+} from '@astrojs/starlight/components';
+
+By the end of this page you have a playable game running in a browser tab and the editor
+open against the same project.
+
+:::note[Prerequisites]
+Node 22.12 or newer. Nothing else — the project template brings its own build tooling.
+:::
+
+## Scaffold the project
+
+<Steps>
+
+1. Create the project. {/* TODO(template): publish create-dacha before release */}
+
+   <Tabs syncKey="pkg">
+     <TabItem label="npm">
+       ```bash
+       npm create dacha@latest my-game
+       ```
+     </TabItem>
+     <TabItem label="pnpm">
+       ```bash
+       pnpm create dacha my-game
+       ```
+     </TabItem>
+     <TabItem label="yarn">
+       ```bash
+       yarn create dacha my-game
+       ```
+     </TabItem>
+   </Tabs>
+
+   Leave the name off and it asks for one.
+
+2. Install dependencies.
+
+   ```bash
+   cd my-game
+   npm install
+   ```
+
+   Expect this one to take a few minutes. `dacha-workbench` builds its desktop
+   application on install. Later installs in the same project are quick.
+
+3. Start the game.
+
+   ```bash
+   npm run dev
+   ```
+
+   Open the address Vite prints — `http://localhost:5173` unless the port is taken. A
+   player sprite stands on a grass field; **WASD** moves it.
+
+</Steps>
+
+## Open the editor
+
+Leave the dev server running and open a second terminal:
+
+```bash
+npm run editor
+```
+
+The editor starts as its own desktop application and loads the project it was launched
+from. You now have two things running: the game, served by Vite, and the editor, pointed
+at the same directory.
+
+That is the working setup: change something in the editor, see it in the browser tab.
+
+## What you got
+
+The scene has three actors — a camera, the player, and a tiled background — and the
+movement is a component and a system in `src/game/`, written the same way your own will
+be. It is a starting point to change, not a demo to read.
+
+Everything the editor writes lives under `data/`; everything you write lives under `src/`.
+[Project structure](/getting-started/project-structure/) walks the tree in full.
+
+| Script | What it does |
+| --- | --- |
+| `npm run dev` | Vite dev server |
+| `npm run editor` | The editor, against this project |
+| `npm run build` | Production build into `dist/` |
+| `npm run preview` | Serve the production build |
+| `npm run typecheck` | `tsc --noEmit` |
+
+:::note[Adding Dacha to a project you already have]
+Install `dacha` and `dacha-workbench`, then create the two files the editor needs by hand:
+a configuration for it to edit, and `dacha-workbench.config.js` pointing at it. You supply
+the bundler and the entry point yourself; [project
+structure](/getting-started/project-structure/) describes what has to be there.
+
+The editor looks for `dacha-workbench.config.js` next to your `package.json`. If your
+project sets `"type": "module"`, name the file `.cjs` and pass it explicitly, the way the
+template does: `dacha-workbench --config dacha-workbench.config.cjs`.
+:::
+
+## Next
+
+<CardGrid>
+  <LinkCard
+    title="Your first scene"
+    description="Change the scene in the editor and watch the running game follow."
+    href="/getting-started/first-scene/"
+  />
+  <LinkCard
+    title="Project structure"
+    description="What lives where, and which conventions the tooling relies on."
+    href="/getting-started/project-structure/"
+  />
+</CardGrid>

@@ -221,9 +221,11 @@ side you are on:**
 - **Renderer process (React)** — everything under
   **[src/](packages/dacha-workbench/src/)**, entry
   [src/app.tsx](packages/dacha-workbench/src/app.tsx).
-- **CLI** — [bin/index.js](packages/dacha-workbench/bin/index.js) (commander):
-  `dacha-workbench init` scaffolds a project, the default command launches the editor. In
-  dev it spawns the `electron` CLI, in prod the packaged binary. `postinstall` runs
+- **CLI** — [bin/index.js](packages/dacha-workbench/bin/index.js) (commander): the single
+  default command launches the editor, taking `--config` (default
+  `dacha-workbench.config.js`). In dev it spawns the `electron` CLI, in prod the packaged
+  binary. Scaffolding a new project is `create-dacha`'s job, not this CLI's — the `init`
+  subcommand was removed when the template landed. `postinstall` runs
   `bin/install.js`, which packages the Electron app — set `DACHA_SKIP_APP_BUILD=1` to skip
   that when only the library part matters.
 

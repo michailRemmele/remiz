@@ -20,14 +20,6 @@ WASD moves the player. The Restart button reloads the scene.
 | `npm run editor` | Open the dacha editor against this project |
 | `npm run typecheck` | `tsc --noEmit` |
 
-### If `npm run dev` fails to start
-
-npm 11 blocks package install scripts by default, and Vite needs esbuild's:
-
-```bash
-npm approve-scripts esbuild
-```
-
 ## Layout
 
 ```

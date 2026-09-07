@@ -79,7 +79,7 @@ actors are added and removed, so rebuilding it every frame is wasted work. `getA
 returns a `Set`.
 
 **Listeners registered in the constructor are removed in `onSceneDestroy`.** This is the
-most common leak in a dacha project. A scene system is constructed again every time its
+most common leak in a Dacha project. A scene system is constructed again every time its
 scene loads, so a listener that is never removed accumulates one copy per level restart.
 The query subscribes to the scene as well, which is what `destroy()` is for.
 

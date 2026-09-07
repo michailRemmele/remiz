@@ -3,7 +3,7 @@ title: "Migration guides"
 description: "Breaking changes between versions, and what to do about them."
 ---
 
-dacha is before version 1.0. Breaking changes land between minor versions, and they are
+Dacha is before version 1.0. Breaking changes land between minor versions, and they are
 not deprecated first. Each entry below says what changed, why, and what to do in your
 project.
 

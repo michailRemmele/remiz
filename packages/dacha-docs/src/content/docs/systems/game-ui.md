@@ -49,6 +49,7 @@ const engine = new Engine({
   config,
   systems: [UIBridge],
   components: [],
+  assets: [],
   resources: {
     [UIBridge.systemName]: {
       loadUI: () => import('./ui/index'),

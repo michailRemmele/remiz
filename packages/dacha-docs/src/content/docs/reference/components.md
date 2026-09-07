@@ -3,7 +3,7 @@ title: "Components index"
 description: "Every built-in component, and where it is documented."
 ---
 
-Components in dacha are documented alongside the system that reads them, because a
+Components in Dacha are documented alongside the system that reads them, because a
 component on its own does nothing: `Collider` is meaningless without physics running,
 `Sprite` without the renderer. Splitting them into a separate reference would mean two
 places to look and two places to keep current.

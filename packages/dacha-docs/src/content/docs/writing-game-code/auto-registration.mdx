@@ -22,13 +22,18 @@ A file is picked up when two things are true.
 
 **Its name ends with the right suffix:**
 
-| Suffix | Declares |
-| --- | --- |
-| `*.component.ts` | A component |
-| `*.system.ts` | A system |
-| `*.behavior.ts` | A behavior |
-| `*.shader.ts` | A shader |
-| `*.filter-effect.ts` | A filter effect |
+| Suffix | Declares | Globbed by the template |
+| --- | --- | --- |
+| `*.component.ts` | A component | yes |
+| `*.system.ts` | A system | yes |
+| `*.behavior.ts` | A behavior | yes |
+| `*.shader.ts` | A shader | add a glob |
+| `*.filter-effect.ts` | A filter effect | add a glob |
+
+The editor recognises all five. The generated entry point globs the first three, because
+those are what most games need; shaders and filter effects are rarer, and they are handed
+to the renderer rather than to the engine, so the template leaves them out. Adding them is
+one more glob and one more key in `resources` — see below.
 
 **The class is the default export:**
 
@@ -80,6 +85,7 @@ const engine = new Engine({
   config,
   systems: [Renderer, PhysicsSystem, BehaviorSystem, ...gameSystems],
   components: [Transform, Sprite, Behaviors, ...gameComponents],
+  assets: [Texture],
   resources: {
     [BehaviorSystem.systemName]: [...gameBehaviors],
   },
@@ -87,7 +93,25 @@ const engine = new Engine({
 ```
 
 Behaviors are not systems or components, so they arrive as a resource for the behavior
-system rather than in either array.
+system rather than in either array. Shaders and filter effects work the same way, keyed to
+the renderer instead:
+
+```ts
+resources: {
+  [BehaviorSystem.systemName]: [...gameBehaviors],
+  [Renderer.systemName]: {
+    shaders: [...gameShaders],
+    filterEffects: [...gameFilterEffects],
+  },
+},
+```
+
+:::caution
+Being collected is not the same as running. The glob makes a system **available**; it only
+runs if it is also listed in `systems` in `data/data.json`, and the order of that list
+decides the order systems run in. Components need no such list — a component is live
+wherever an actor carries it.
+:::
 
 From the engine's point of view nothing unusual happened. It received arrays of classes,
 exactly as it would have if you had listed them by hand.

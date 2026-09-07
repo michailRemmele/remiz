@@ -4,16 +4,22 @@ import {
   CameraSystem,
   KeyboardInputSystem,
   KeyboardControlSystem,
+  BehaviorSystem,
   UIBridge,
   Animator,
   Transform,
   Sprite,
   Camera,
   KeyboardControl,
+  Behaviors,
   Texture,
   Animatable,
 } from 'dacha';
-import type { SystemConstructor, ComponentConstructor } from 'dacha';
+import type {
+  SystemConstructor,
+  ComponentConstructor,
+  BehaviorConstructor,
+} from 'dacha';
 
 import { importAll } from './import-all';
 
@@ -25,6 +31,9 @@ const gameComponents = importAll(
 const gameSystems = importAll(
   import.meta.glob('./**/*.system.ts', { eager: true }),
 ) as SystemConstructor[];
+const gameBehaviors = importAll(
+  import.meta.glob('./**/*.behavior.ts', { eager: true }),
+) as BehaviorConstructor[];
 
 const engine = new Engine({
   config,
@@ -33,6 +42,7 @@ const engine = new Engine({
     CameraSystem,
     KeyboardInputSystem,
     KeyboardControlSystem,
+    BehaviorSystem,
     UIBridge,
     Animator,
     ...gameSystems,
@@ -42,11 +52,13 @@ const engine = new Engine({
     Sprite,
     Camera,
     KeyboardControl,
+    Behaviors,
     Animatable,
     ...gameComponents,
   ],
   assets: [Texture],
   resources: {
+    [BehaviorSystem.systemName]: gameBehaviors,
     [UIBridge.systemName]: {
       loadUI: () => import('./ui'),
     },

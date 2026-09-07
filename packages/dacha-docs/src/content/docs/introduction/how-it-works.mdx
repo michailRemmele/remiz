@@ -9,10 +9,13 @@ import livePreviewPoster from '../../../assets/editor/editor-live-preview.poster
 import TwoProcesses from '../../../components/diagrams/TwoProcesses.astro';
 import FrameDiagram from '../../../components/diagrams/FrameDiagram.astro';
 
-Two programs sit around a dacha project. Your own toolchain builds and serves the game;
+Two programs sit around a Dacha project. Your own toolchain builds and serves the game;
 the editor is launched separately against the same directory. They meet at one file.
 
 <TwoProcesses />
+
+The two programs never talk to each other; they take turns over that file. That is enough
+for an edit-and-see loop:
 
 <DocVideo
   slug="editor-live-preview"
@@ -25,10 +28,8 @@ the editor is launched separately against the same directory. They meet at one f
 
 ## The configuration is the game
 
-Everything the engine needs to build a world is description: the scenes, the actors in
-them, the components on those actors and their values, the templates, and the systems with
-their options. Here is a scene with a single actor in it, abridged — the shape of what the
-editor produces:
+The configuration is one JSON file — `data/data.json` by default. Here is a scene with a
+single actor in it, abridged, to show the shape of what the editor produces:
 
 ```json
 {
@@ -54,11 +55,11 @@ editor produces:
             {
               "name": "Sprite",
               "config": {
-                "src": "assets/terrain/grass.png",
+                "src": "grass-tile.png",
                 "width": 320,
                 "height": 320,
                 "fit": "repeat",
-                "sortingLayer": "terrain"
+                "sortingLayer": "background"
               }
             }
           ]
@@ -67,6 +68,7 @@ editor produces:
     }
   ],
   "systems": [
+    { "name": "CameraSystem", "options": { "windowNodeId": "root" } },
     {
       "name": "Renderer",
       "options": { "windowNodeId": "root", "backgroundColor": "#000" }
@@ -75,23 +77,28 @@ editor produces:
 }
 ```
 
-Two things are worth noticing. Components and systems are referred to **by name** —
-`"Transform"` is a string, not an import. And there is no logic anywhere: the file says
-what exists, never what happens.
+Notice there is no logic anywhere: the file says what exists, never what happens.
 
 ## Your game builds the engine
 
-Because the configuration names classes as strings, the engine has to be handed the actual
-classes to match those names against:
+The logic lives in your code. You hand the engine the classes the configuration draws on,
+and it builds the world:
 
 ```ts
-import { Engine, Renderer, Transform, Sprite, Texture } from 'dacha';
+import {
+  Engine,
+  Renderer,
+  CameraSystem,
+  Transform,
+  Sprite,
+  Texture,
+} from 'dacha';
 
 import config from '../data/data.json';
 
 const engine = new Engine({
   config,
-  systems: [Renderer],
+  systems: [Renderer, CameraSystem],
   components: [Transform, Sprite],
   assets: [Texture],
 });
@@ -99,14 +106,9 @@ const engine = new Engine({
 void engine.play();
 ```
 
-That is the entire entry point. `config` is imported like any other module, so a save in
-the editor reaches the running game through your dev server.
-
-:::caution
-The lists have to cover everything the configuration refers to. A scene using `Sprite`
-needs `Sprite` in `components`, `Renderer` in `systems` and `Texture` in `assets`, or
-`play()` throws at startup instead of quietly rendering nothing.
-:::
+That is the whole shape of an entry point. The generated project's version lists a few
+more built-ins than this, and nothing else. `config` is imported like any other module, so
+a save in the editor reaches the running game through your dev server.
 
 ## Inside a frame
 
@@ -116,62 +118,15 @@ systems in two separate phases.
 <FrameDiagram />
 
 **`update`** runs once per rendered frame and receives a variable time delta.
-**`fixedUpdate`** runs on its own clock, at a rate that does not follow the frame rate; in
-one frame it may run several times, once, or not at all.
-
-The split exists so that a game behaves the same on a 60 Hz laptop and a 144 Hz monitor.
-When you write a system you choose the phase: movement, physics and gameplay timers go in
-`fixedUpdate`; input, cameras, animation and anything that should track the display go in
-`update`.
-
-:::tip
-The renderer is a system like any other, running in `update`. There is no privileged render
-stage, and nothing stops you from adding a system that runs after it.
-:::
+**`fixedUpdate`** runs on its own clock, at a rate that does not follow the frame rate, so
+that a game behaves the same on a 60 Hz laptop and a 144 Hz monitor. When you write a
+system you choose the phase.
 
 <LinkCard
   title="The game loop & lifecycle"
   description="Both clocks in full, the settings that tune them, and the exact order the lifecycle hooks fire in."
   href="/concepts/game-loop/"
 />
-
-## Systems act on actors
-
-A system receives its scene and works with the actors in it. This is what the editor
-generates when you create a new system, with the body filled in:
-
-```ts
-import { SceneSystem, Transform } from 'dacha';
-import type { Scene, Time, SceneSystemOptions } from 'dacha';
-
-export default class SpinSystem extends SceneSystem {
-  private scene: Scene;
-  private time: Time;
-
-  constructor(options: SceneSystemOptions) {
-    super();
-
-    this.scene = options.scene;
-    this.time = options.time;
-  }
-
-  update(): void {
-    const { deltaTime } = this.time;
-
-    for (const actor of this.scene.children) {
-      const transform = actor.getComponent(Transform);
-      transform.local.rotation += deltaTime * Math.PI;
-    }
-  }
-}
-```
-
-`deltaTime` is in seconds, so that is half a turn per second regardless of frame rate.
-
-Iterating the scene directly is fine, and for a small system it is the clearest thing to
-do. When a system needs "every actor that has these components", including ones spawned
-later, `ActorQuery` does that bookkeeping for you — see
-[systems](/concepts/systems/).
 
 ## The editor reads the same project
 
