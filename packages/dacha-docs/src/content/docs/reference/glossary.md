@@ -16,8 +16,10 @@ Dacha says *actor*. See [actors](/concepts/actors/).
 
 A live set of the actors in a scene matching a filter — either a list of components or a
 predicate. It keeps itself up to date as actors and components come and go, so a system
-does not have to track them by hand. `ActorCollection` is the same idea with a
-components-only filter. See [systems](/concepts/systems/).
+does not have to track them by hand. See [ECS in Dacha](/concepts/ecs/).
+
+`ActorCollection` is the earlier version of the same idea, with a components-only filter.
+It is **deprecated**; write new code against `ActorQuery`.
 
 ### Asset
 
@@ -95,12 +97,13 @@ and audio are built as. Every system class carries a static `systemName`. See
 
 A typed handle that one system publishes on the world so other systems and behaviors can
 call into it — physics queries, camera lookups, interpolation. Retrieved with
-`world.systemApi.get(…)`. See [systems](/concepts/systems/).
+`world.systemApi.get(…)`. See [scenes and the world](/concepts/scenes-and-world/).
 
 ### Template
 
 A reusable actor blueprint, including its children and their components. An actor placed
-from a template keeps a link back to it, and a template can be spawned at runtime with
+from a template keeps a link back to it, and a template can be
+[spawned at runtime](/concepts/actors/#creating-and-destroying-actors) with
 `actorSpawner.spawn(templateId)`. See [templates](/editor/templates/).
 
 ### World

@@ -5,90 +5,128 @@ description: "What entity-component-system means here, and where Dacha departs f
 
 import EcsRelationships from '../../../components/diagrams/EcsRelationships.astro';
 
-Entity-component-system is a way of organising a game that separates what a thing *is*
-from what a thing *does*. Instead of a deep class hierarchy where `Player extends
-Character extends GameObject`, you have plain entities that own bags of data, and separate
-logic units that operate on every entity holding a particular combination of data.
+Entity-component-system separates what a thing *is* from what a thing *does*.
 
-Dacha follows that idea, with its own vocabulary and one addition.
+Many engines build a deep class hierarchy instead: `Player extends Character extends
+GameObject`. ECS does not. An entity is a plain object that holds data. The logic lives in
+separate units. Each unit runs over every entity that holds a certain combination of data.
+
+Dacha follows this idea. It uses its own names, and it adds one thing the textbook version
+does not have.
 
 <EcsRelationships />
 
 ## Actor, not entity
 
-The thing a game is made of is called an **actor**. It owns components, it can own child
-actors, and it has an identity and a name.
+Dacha calls the game object an **actor**. An actor holds components. It can hold child actors.
+It has an id and a name.
 
-The word "entity" is taken: `Entity` is an internal base class that actors, scenes and the
-world all extend, which is where the hierarchy and event-target behaviour come from. When
-this documentation says actor, it means the game object.
+The word "entity" is already taken. `Entity` is an internal base class. Actors, scenes and the
+world all extend it, and it gives them the hierarchy and the event-target methods. When this
+documentation says actor, it means the game object.
 
 ## Components hold data and nothing else
 
-A component is a bag of values attached to an actor. `Transform` holds a position,
-rotation and scale. `Sprite` holds which image to draw. `Collider` holds a shape.
+A component is a set of values attached to an actor. `Transform` holds a position, a rotation
+and a scale. `Sprite` holds the image to draw. `Collider` holds a shape.
 
-None of them contain logic. That is not stylistic preference, it is a structural
-requirement: the whole game is [described as data](/concepts/configuration/) that a visual
-editor reads and writes. A component with behaviour in it could not be serialised into
-that file, and the editor could not offer it in the inspector.
+A component contains no logic. This is not a style rule. It follows from how the engine works.
+The whole game world is [described by data](/concepts/configuration/), and a visual editor
+reads and writes that data. You cannot save a method into that file, and the editor cannot
+show one in the inspector.
 
-If you find logic creeping into a component, it belongs in a system or a behavior.
+If logic starts to appear in a component, move it to a system or a behavior.
 
 ## Systems hold the logic
 
-A system runs every frame and acts on the actors it cares about. It does not keep a list
-by hand; it declares which components it needs and receives the matching actors, including
-ones spawned later:
+A system runs every frame and acts on the actors it cares about. It does not build that list
+by hand. It declares which components it needs, and it receives every actor that has them,
+including actors created later.
+
+Build the query once, in the constructor. Read it each time the system runs:
 
 ```ts
-import { ActorQuery, Transform } from 'dacha';
+import { ActorQuery, SceneSystem, Transform } from 'dacha';
+import type { SceneSystemOptions } from 'dacha';
 
-import { Velocity } from './velocity.component';
+import Velocity from '../components/velocity.component';
 
-const query = new ActorQuery({
-  scene,
-  filter: [Transform, Velocity],
-});
+export default class MovementSystem extends SceneSystem {
+  private actorQuery: ActorQuery;
 
-for (const actor of query.getActors()) {
-  const transform = actor.getComponent(Transform);
-  const velocity = actor.getComponent(Velocity);
-  // …
+  constructor(options: SceneSystemOptions) {
+    super();
+
+    this.actorQuery = new ActorQuery({
+      scene: options.scene,
+      filter: [Transform, Velocity],
+    });
+  }
+
+  update(): void {
+    for (const actor of this.actorQuery.getActors()) {
+      const transform = actor.getComponent(Transform);
+      const velocity = actor.getComponent(Velocity);
+      // …
+    }
+  }
 }
 ```
 
-The filter can also be a predicate when a component list is not expressive enough:
+The query keeps itself up to date. It adds an actor when the actor enters the scene, and
+removes it when the actor leaves. It re-tests an actor when a component is attached to it or
+detached from it. So do not rebuild the query each frame. [Writing a
+system](/writing-game-code/systems/) shows the whole file, cleanup included.
+
+A list of components is not always enough. The filter can also be a function:
 
 ```ts
 const query = new ActorQuery({
   scene,
-  filter: (actor) => actor.getComponent(Transform).world.position.y > 100,
+  filter: (actor) => Boolean(actor.getComponent(Enemy)) && actor.name.startsWith('boss'),
 });
 ```
 
-Systems come in two kinds depending on whether they survive a scene change. That
-distinction has [its own page](/concepts/systems/).
+:::caution
+The engine runs the predicate when an actor enters the scene and when its components change.
+It never runs the predicate because a value inside a component changed. A filter on
+`transform.world.position.y > 100` checks the position once, when the actor appears. After
+that the result goes stale as the actor moves. Filter on what an actor *is*, not on what it is
+doing right now.
+:::
+
+There are two kinds of system. Which one you extend depends on whether the system has to
+survive a scene change. That has [its own page](/concepts/systems/).
 
 ## Behaviors are the addition
 
-A textbook ECS has no equivalent of a **behavior**. A behavior attaches to a single actor
-and runs for that actor alone.
+A textbook ECS has nothing like a **behavior**. A behavior attaches to a single actor and runs
+for that actor alone.
 
-The reason it exists is that not all logic is naturally a sweep over many actors. A door
-that opens when approached, a camera that follows a target, a boss with a scripted
-sequence: writing each as a system that queries exactly one actor is awkward, and writing
-it as a behavior is not. See [behaviors](/systems/behaviors/).
+It exists because not all logic is a sweep over many actors. A door opens when the player
+comes close. A camera follows one target. A boss runs a scripted sequence. Writing each of
+these as a system that queries exactly one actor is awkward. Writing it as a behavior is not.
+See [behaviors](/systems/behaviors/).
 
-Use a system when the logic applies to a class of actors. Use a behavior when it applies
-to one.
+## Where to put a piece of logic
+
+| Put it in | When |
+| --- | --- |
+| A component | It is a value, not a decision: speed, health, the current target's id |
+| A system | The logic applies to a class of actors, or to the scene as a whole |
+| A behavior | The logic applies to one actor and is specific to it |
+
+Systems and behaviors have the same two per-frame hooks, `update` and `fixedUpdate`. The
+difference is how many actors one instance covers.
 
 ## Why the shape is the way it is
 
-Almost every constraint here follows from one decision: the game is described by data that
-a visual editor edits. Components have to be serialisable, so they hold no logic. Systems
-have to be listed and configured in that file, so they are named and take options. Actors
-have to be arrangeable in a tree, so they form a hierarchy.
+Almost every rule on this page comes from one decision. The game world is described by data,
+and a visual editor edits that data.
 
-The payoff is that the editor is not a separate authoring tool bolted onto a code-first
-engine. It edits the same thing the engine runs.
+- Components must survive being written to JSON, so they hold no logic.
+- Systems are listed and configured in the same file, so they have names and take options.
+- Actors are arranged in a tree in the editor, so they form a hierarchy.
+
+The editor is not a separate authoring tool bolted onto a code-first engine. It edits the same
+data the engine runs.

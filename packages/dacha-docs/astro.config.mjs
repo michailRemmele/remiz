@@ -73,19 +73,15 @@ export default defineConfig({
           ],
         },
         {
-          label: 'Tutorials',
-          items: [{ slug: 'tutorials/garden' }],
-        },
-        {
           label: 'Core Concepts',
           items: [
             { slug: 'concepts/ecs' },
-            { slug: 'concepts/configuration' },
             { slug: 'concepts/actors' },
             { slug: 'concepts/scenes-and-world' },
             { slug: 'concepts/systems' },
             { slug: 'concepts/game-loop' },
             { slug: 'concepts/events' },
+            { slug: 'concepts/configuration' },
             { slug: 'concepts/editor-role' },
           ],
         },
@@ -125,6 +121,10 @@ export default defineConfig({
             { slug: 'systems/camera' },
             { slug: 'systems/game-ui' },
           ],
+        },
+        {
+          label: 'Tutorials',
+          items: [{ slug: 'tutorials/garden' }],
         },
         {
           label: 'Shipping Your Game',

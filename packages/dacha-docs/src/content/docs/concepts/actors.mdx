@@ -1,0 +1,225 @@
+---
+title: "Actors & Transform"
+description: "How an actor holds components, where it sits in the scene tree, and how to create one while the game runs."
+---
+
+import TransformSpaces from '../../../components/diagrams/TransformSpaces.astro';
+
+Every actor is created with a `Transform`. Everything else comes from the components you
+attach to it.
+
+This page covers what you do with an actor from code. You read and change its components,
+place it, find it, and create or destroy it while the game runs.
+
+## Reading components
+
+Get a component by passing its class:
+
+```ts
+import { Transform, Sprite } from 'dacha';
+
+const transform = actor.getComponent(Transform);
+const sprite = actor.getComponent(Sprite);
+```
+
+Passing the class is what lets TypeScript infer the component's type, so
+`transform.world.position.x` is checked at compile time. `getComponent` also accepts the
+component's name as a string, but then you get no type at all. Pass the class.
+
+An actor may not have the component you ask for. Guard when it is optional:
+
+```ts
+const sprite = actor.getComponent(Sprite);
+if (!sprite) {
+  return;
+}
+```
+
+:::caution
+`getComponent` is typed as returning the component, not `Component | undefined`. TypeScript
+will not remind you to check. At runtime the value is `undefined` when the actor does not have
+the component. If you ask for a component an actor might not have, write the guard yourself.
+:::
+
+## Changing which components an actor has
+
+The set of components is not fixed at design time. You can attach and detach a component while
+the game runs. This is how you model a temporary state such as stunned, invulnerable or on
+fire:
+
+```ts
+import Stunned from '../components/stunned.component';
+
+actor.setComponent(new Stunned({ duration: 2 }));
+
+actor.removeComponent(Stunned);
+```
+
+`setComponent` replaces any component of the same class the actor already has.
+`removeComponent` takes the class, and does nothing if the actor does not have it.
+
+Both take effect at once. The engine announces both immediately instead of putting them in the
+event queue. That is what keeps queries correct. A system that filters on `Stunned` sees the
+actor in its results on the very next line, not on the next frame. So attaching a marker
+component is a workable way to move an actor in and out of a system's reach.
+
+## Transform is always there
+
+`Transform` is the one component every actor has. It holds position, rotation and scale.
+Almost everything else builds on it. The renderer draws at its position, physics moves it, and
+the camera follows it.
+
+It is also the one built-in component that belongs to no system. That is why it is documented
+here and not on a system page. Every other component is documented next to the system that
+reads it. See the [components index](/reference/components/).
+
+### Local and world
+
+A transform holds the same three values twice, measured from two different places:
+
+| Accessor | Measured from | Use it for |
+| --- | --- | --- |
+| `transform.local` | the parent actor's transform | placing a child against its parent, such as a weapon on a character or a turret on a tank |
+| `transform.world` | the scene's origin | anything absolute, such as the distance between two actors, or spawning something where this one is |
+
+<TransformSpaces />
+
+```ts
+const transform = actor.getComponent(Transform);
+
+// where the actor actually is
+const { x, y } = transform.world.position;
+
+// nudge a child relative to its parent
+transform.local.position.x += 10;
+```
+
+Both are readable **and** writable, on `position`, `rotation` and `scale` alike. When you
+write to `world`, the engine converts the value back into local coordinates through the
+parent's transform. So you can place an actor at an absolute point without walking the
+hierarchy yourself.
+
+:::caution
+Assign to the axis, not to the whole vector. `position` and `scale` are objects with `x` and
+`y` accessors that do the conversion and mark the transform dirty. Replacing the object throws
+those accessors away.
+
+```ts
+transform.world.position.x = 100;   // correct
+transform.world.position.y = 40;
+
+transform.world.position = { x: 100, y: 40 };   // wrong: breaks the transform
+```
+:::
+
+An actor can have the scene as its parent instead of another actor. Such an actor has no
+parent transform, so its `local` and `world` values are identical. That is why the difference
+is easy to miss until you nest something for the first time.
+
+Converting between the two is a composition, not an addition. Adding a child's offset to its
+parent's offset looks correct until the parent rotates. Then the child spins around its own
+centre and stays where it was, instead of swinging around the parent. `world` is composed
+through the parent's whole transform, rotation and scale included. That is what makes a weapon
+travel with the arm holding it.
+
+### Degrees and radians
+
+The editor and the code use different units for rotation. This catches everyone once:
+
+| Where | Unit |
+| --- | --- |
+| `rotation` in the configuration and the inspector | degrees |
+| `local.rotation`, `world.rotation` | radians |
+| `local.rotationDeg`, `world.rotationDeg` | degrees |
+
+```ts
+transform.local.rotationDeg = 90;
+transform.local.rotation = Math.PI / 2; // the same thing
+```
+
+:::note
+The configuration also spells the fields differently. It writes a `Transform` as `offset`,
+`rotation` and `scale`. At runtime `offset` becomes `local.position`.
+:::
+
+## The hierarchy
+
+Actors form a tree. That tree is what the `local` and `world` split above is measured against.
+
+Nesting is what makes composite objects work: a character with a weapon attached, a platform
+with riders on it, a health bar that follows a unit. Move the parent and everything under it
+comes along.
+
+Scenes and the world are part of the same tree, because all three extend a shared base class
+that provides the hierarchy.
+
+## Finding actors
+
+By name, searching the whole subtree by default:
+
+```ts
+const player = scene.findChildByName('Player');
+```
+
+By id, when you have stored one:
+
+```ts
+const actor = scene.findChildById(savedId);
+```
+
+Both return `undefined` when nothing matches, so check the result. Pass `false` as the second
+argument to search only the direct children.
+
+To find actors by the components they have rather than by name, use a query instead. That is
+what systems do. See [ECS in Dacha](/concepts/ecs/).
+
+## Creating and destroying actors
+
+Bullets, enemies and particles are not placed in the scene ahead of time. You spawn them from
+a [template](/editor/templates/) while the game runs. Systems and behaviors both receive an
+`actorSpawner` in their options. It takes the template's
+[id](/concepts/configuration/#identifiers):
+
+```ts
+import { Transform } from 'dacha';
+
+const bullet = this.actorSpawner.spawn(BULLET_TEMPLATE_ID);
+const transform = bullet.getComponent(Transform);
+
+transform.world.position.x = 100;
+transform.world.position.y = 40;
+
+this.scene.appendChild(bullet);
+```
+
+`spawn` builds the actor but does not put it anywhere. Until you append it, the actor belongs
+to no hierarchy. No query matches it and no system touches it. That is the window in which to
+set it up. Append it to the scene for a free-standing actor, or to another actor to make it a
+child of that one.
+
+A spawned actor comes from the same template the editor shows you. So an actor spawned at
+runtime and an actor placed by hand are identical. A spawned actor also remembers where it
+came from, as `actor.templateId`.
+
+### Destroying one
+
+To destroy an actor, detach it from its parent. It takes its own children with it:
+
+```ts
+actor.remove();
+```
+
+:::caution
+The engine announces appends and removals immediately, so a query built around the affected
+actors is correct on the next line. `getActors()` returns the query's own live `Set`, not a
+copy. Spawning or removing an actor while you iterate that `Set` mutates the collection you
+are looping over. Copy it first when the body of the loop can do either.
+:::
+
+## Actors are event targets
+
+An actor can dispatch events and listen for them. Events travel up the hierarchy to the scene
+and then to the world. This is how collision reports and input actions reach the code that
+responds to them.
+
+See [events](/concepts/events/).

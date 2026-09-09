@@ -1,0 +1,114 @@
+---
+title: "Systems"
+description: "The two kinds of system, and the single question that decides between them."
+---
+
+import { LinkCard } from '@astrojs/starlight/components';
+import SystemLifetimes from '../../../components/diagrams/SystemLifetimes.astro';
+
+Logic lives in systems. There are two kinds, and one question decides between them:
+
+**Does this need to survive a scene change?**
+
+If yes, write a world system. If no, write a scene system.
+
+<SystemLifetimes />
+
+## World systems
+
+The engine creates a `WorldSystem` once, and the system lives for the whole run. Rendering,
+input and audio are world systems. A renderer that was destroyed and rebuilt on every scene
+change would throw away its GPU state, and audio would cut out between levels.
+
+Your own systems answer the same question. Anything that holds state the player carries
+between levels is a world system: an inventory, a score, which abilities are unlocked.
+
+Without a world system that state has to live somewhere else, usually a module-level variable
+or `localStorage`. Both sit outside the engine's lifecycle. `stop()` does not clear them, so
+they still hold the last run's values when a new game starts.
+
+World systems get three lifecycle hooks that scene systems do not have:
+
+| Hook | Receives | When |
+| --- | --- | --- |
+| `onWorldLoad` | `world` | Once, as the world is being set up. Async: the engine waits for every world system's hook before continuing |
+| `onWorldReady` | `world` | Once, after every world system has loaded |
+| `onWorldDestroy` | `world` | Once, as the game shuts down |
+
+Load and ready are separate so that one system can depend on another being ready. It does not
+have to depend on construction order.
+
+## Scene systems
+
+The engine creates a `SceneSystem` when its scene loads and destroys it when the scene is torn
+down. Use it for anything whose lifetime matches a scene: level logic, enemy AI, a score
+counter for one level.
+
+The engine builds scene systems again for each scene, so a scene system starts with clean
+state every time a scene loads. That is usually what you want. It is also worth remembering
+when something resets and you do not know why.
+
+## The hooks both kinds share
+
+| Hook | Receives | When |
+| --- | --- | --- |
+| `onSceneLoad` | `scene` | Before the scene becomes active. Async: load resources here |
+| `onSceneEnter` | `scene` | Once the scene is active |
+| `fixedUpdate` | nothing | At a fixed rate. May run zero or several times per frame |
+| `update` | nothing | Once per rendered frame |
+| `onSceneExit` | `scene` | As the scene stops being active |
+| `onSceneDestroy` | `scene` | As the scene is torn down. Remove listeners here |
+
+`update` and `fixedUpdate` take no arguments. Read the frame's timing from the `time` object
+the system was constructed with.
+
+The two per-frame hooks have different jobs. `fixedUpdate` takes the simulation: movement,
+physics, anything whose outcome must not depend on frame rate. `update` takes presentation.
+[The game loop](/concepts/game-loop/) covers both clocks in full, and what it costs to get them
+backwards.
+
+A world system receives the scene hooks too, once per scene change. That is how a persistent
+system reacts to the world moving between levels.
+
+`onSceneLoad` and `onWorldLoad` are the two async hooks, and they are the two the engine waits
+for. The scene does not become active, and the world does not become ready, until every
+system's hook has resolved. So they are the right place to fetch anything that must be present
+before the first frame. Use `onWorldLoad` for what the whole game needs, and `onSceneLoad` for
+what one scene needs.
+
+## What a system receives
+
+The engine constructs both kinds with an options object. These fields are shared:
+
+| Field | What it is |
+| --- | --- |
+| `actorSpawner` | [Creates actors](/concepts/actors/#creating-and-destroying-actors) from templates at runtime |
+| `templateCollection` | The templates defined in the configuration |
+| `assets` | The registry of the project's assets |
+| `globalOptions` | The global settings for the game |
+| `time` | Shared timing state |
+| `resources` | Whatever was passed for this system in the engine's `resources` |
+
+A scene system also receives `scene` and `world`. A world system receives `world`.
+
+The engine merges the system's own `options` from the configuration into the same object. So a
+system reads its settings from there, next to these fields.
+
+## Cleaning up
+
+Whatever a system subscribes to in its constructor, it unsubscribes from in `onSceneDestroy`.
+Nothing does it for you.
+
+For a scene system, this matters most for anything that outlives the scene. A listener on the
+**world** stays registered after the scene is gone, and the engine builds the system again on
+the next scene load, so you get a second copy. A listener on the **scene** disappears along
+with the scene, but removing it keeps the system's own lifecycle honest.
+
+Call `destroy()` on any `ActorQuery` in the same place. See [removing
+listeners](/concepts/events/#removing-listeners).
+
+<LinkCard
+  title="Writing a system"
+  description="The same ideas as a file you can copy: the class, the query, the decorator and the cleanup."
+  href="/writing-game-code/systems/"
+/>

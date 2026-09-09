@@ -1,5 +1,5 @@
 ---
-title: "Building & shipping"
+title: "Building & deploying"
 description: "Produce a distributable build and put it online."
 ---
 

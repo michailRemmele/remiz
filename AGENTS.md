@@ -69,6 +69,13 @@ illustrate and go through the `astro:assets` optimizer. `npm run check:media -w 
 runs in the docs workflow and fails the build on an unreachable media URL, which
 starlight's link validator does not cover.
 
+**Documentation prose has a style guide — [packages/dacha-docs/STYLE.md](packages/dacha-docs/STYLE.md).**
+Read it before writing or editing anything under `packages/dacha-docs/src/content/docs/`. The
+short version: the reader is a developer who may not be a fluent English speaker, so write
+short sentences in active voice with concrete verbs, one idea per sentence. Do not chain
+clauses with em dashes, and do not reach for the more elegant phrasing when a plainer one says
+the same thing. The guide is the authority; this paragraph only points at it.
+
 Run a single test file with `npx jest path/to/file.test.ts` from inside the relevant
 package. `npm run dev` is how you see an engine change end-to-end: the TypeScript watcher
 recompiles the engine and the editor's webpack picks it up without a manual build.
@@ -83,6 +90,7 @@ incremental state and will legitimately do nothing when it believes it is up to 
 ```
 packages/dacha/              the engine
 packages/dacha-workbench/    the editor
+packages/dacha-docs/         the documentation site (astro + starlight)
 scripts/                     pack-local.js, release.js (plain Node CommonJS, unlinted)
 docs/                        local planning material — GITIGNORED, never committed
 packs/                       output of pack:local — gitignored

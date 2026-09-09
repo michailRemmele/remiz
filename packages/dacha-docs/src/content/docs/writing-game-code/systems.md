@@ -70,18 +70,18 @@ export default class MovementSystem extends SceneSystem {
 **`@DefineSystem({ name: 'MovementSystem' })`** gives the system the name used in the
 configuration. As with components, the decorator is how a system is named.
 
-**`SceneSystemOptions`** carries `scene`, `world`, `time`, `actorSpawner`,
-`templateCollection`, `globalOptions` and `resources`. A `WorldSystem` gets the same minus
-`scene`. Pull out what you need in the constructor and keep it.
+**`SceneSystemOptions`** carries `scene` and `world` alongside the
+[fields both kinds receive](/concepts/systems/#what-a-system-receives), plus whatever the
+system was given as `options` in the configuration. Pull out what you need in the
+constructor and keep it.
 
 **The query is built once**, in the constructor, and reused. It keeps itself current as
 actors are added and removed, so rebuilding it every frame is wasted work. `getActors()`
 returns a `Set`.
 
-**Listeners registered in the constructor are removed in `onSceneDestroy`.** This is the
-most common leak in a Dacha project. A scene system is constructed again every time its
-scene loads, so a listener that is never removed accumulates one copy per level restart.
-The query subscribes to the scene as well, which is what `destroy()` is for.
+**Listeners registered in the constructor are removed in `onSceneDestroy`**, and the query
+is destroyed there too. This is the most common leak in a Dacha project;
+[removing listeners](/concepts/events/#removing-listeners) explains what it costs.
 
 **Movement is in `fixedUpdate`, not `update`.** Anything whose outcome must not depend on
 frame rate goes on the fixed clock. See [the game loop](/concepts/game-loop/).
@@ -106,7 +106,7 @@ Nothing, if the file is named `*.system.ts` and the class is the default export.
 [auto-registration convention](/writing-game-code/auto-registration/) collects it.
 
 The system also has to be listed in the configuration for it to run, which the editor does
-for you under [configuring systems](/editor/systems-and-options/). Order matters there: a
+for you under [systems & global options](/editor/systems-and-options/). Order matters there: a
 system that reads what another writes must come after it.
 
 :::note

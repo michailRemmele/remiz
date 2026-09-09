@@ -1,15 +1,15 @@
 ---
-title: "Installation & setup"
+title: "Installation"
 description: "Scaffold a project, and get the game and the editor running side by side."
 ---
 
 import { Steps } from '@astrojs/starlight/components';
 
-By the end of this page you have a playable game running in a browser tab and the editor
+By the end of this page you have a playable game running in a browser tab, and the editor
 open against the same project.
 
 :::note[Prerequisites]
-Node 22.12 or newer. Nothing else — the project template brings its own build tooling.
+Node 22.12 or newer. Nothing else. The project template brings its own build tooling.
 :::
 
 ## Scaffold the project
@@ -31,8 +31,8 @@ Node 22.12 or newer. Nothing else — the project template brings its own build 
    npm install
    ```
 
-   Expect this one to take a few minutes. `dacha-workbench` builds its desktop
-   application on install. Later installs in the same project are quick.
+   Expect this one to take a few minutes. `dacha-workbench` builds its desktop application on
+   install. Later installs in the same project are quick.
 
 3. Start the game.
 
@@ -40,8 +40,8 @@ Node 22.12 or newer. Nothing else — the project template brings its own build 
    npm run dev
    ```
 
-   Open the address Vite prints — `http://localhost:5173` unless the port is taken. A
-   player sprite stands on a grass field; **WASD** moves it.
+   Open the address Vite prints. It is `http://localhost:5173` unless the port is taken. A
+   player sprite stands on a grass field. **WASD** moves it.
 
 </Steps>
 
@@ -53,19 +53,19 @@ Leave the dev server running and open a second terminal:
 npm run editor
 ```
 
-The editor starts as its own desktop application and loads the project it was launched
-from. You now have two things running: the game, served by Vite, and the editor, pointed
-at the same directory.
+The editor starts as its own desktop application and loads the project it was launched from.
+Two things are now running: the game, served by Vite, and the editor, pointed at the same
+directory.
 
-That is the working setup: change something in the editor, see it in the browser tab.
+That is the working setup. Change something in the editor, then look at the browser tab.
 
 ## What you got
 
-The scene has three actors — a camera, the player, and a tiled background — and the
-movement is a component and a system in `src/game/`, written the same way your own will
-be. It is a starting point to change, not a demo to read.
+The scene has three actors: a camera, the player, and a tiled background. The movement is a
+component and a system in `src/game/`, written the same way your own will be. Change it
+rather than read it.
 
-Everything the editor writes lives under `data/`; everything you write lives under `src/`.
+Everything the editor writes lives under `data/`. Everything you write lives under `src/`.
 [Project structure](/getting-started/project-structure/) walks the tree in full.
 
 | Script | What it does |
@@ -77,12 +77,15 @@ Everything the editor writes lives under `data/`; everything you write lives und
 | `npm run typecheck` | `tsc --noEmit` |
 
 :::note[Adding Dacha to a project you already have]
-Install `dacha` and `dacha-workbench`, then create the two files the editor needs by hand:
-a configuration for it to edit, and `dacha-workbench.config.js` pointing at it. You supply
-the bundler and the entry point yourself; [project
-structure](/getting-started/project-structure/) describes what has to be there.
+Install `dacha` and `dacha-workbench`, then create two files by hand:
 
-The editor looks for `dacha-workbench.config.js` next to your `package.json`. If your
-project sets `"type": "module"`, name the file `.cjs` and pass it explicitly, the way the
-template does: `dacha-workbench --config dacha-workbench.config.cjs`.
+- A configuration file for the editor to edit. [Project
+  structure](/getting-started/project-structure/) describes what has to be in it.
+- `dacha-workbench.config.js`, pointing at that configuration.
+
+You supply the bundler and the entry point yourself.
+
+The editor looks for `dacha-workbench.config.js` next to your `package.json`. If your project
+sets `"type": "module"`, name the file `.cjs` and pass it explicitly, the way the template
+does: `dacha-workbench --config dacha-workbench.config.cjs`.
 :::

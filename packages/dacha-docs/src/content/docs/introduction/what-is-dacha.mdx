@@ -8,33 +8,42 @@ import { LinkCard } from '@astrojs/starlight/components';
 
 import editorShot from '../../../assets/editor/editor-overview.png';
 
-Dacha is a game engine for 2D browser games, with a visual editor. It has two parts, and you use both:
+Dacha is a game engine for 2D browser games, with a visual editor. It has two parts, and you
+use both:
 
 - **`dacha`** — the engine. An npm package your game imports.
 - **`dacha-workbench`** — the editor. A desktop application you point at your project.
 
-Your game is an ordinary web application: you add the engine as a dependency and build it with a bundler of your choice.
+Your game is an ordinary web application. You add the engine as a dependency and build the
+game with a bundler of your choice.
 
-## The game is data
+## The game world is described by data
 
-A Dacha game is not defined by a startup script that constructs its world. The game itself is a description: its scenes, actors, components, templates, systems and configuration are all data. The engine reads that description at startup and turns it into a running world.
+You do not write a startup script that builds the game world. You describe the world in a
+file. Scenes, actors, components, templates, which systems run, and the settings they run
+under are all entries in one JSON file. This file is called the **configuration**.
 
-This description is stored as JSON in your project, and you are not expected to write it by hand. The editor does.
+The engine reads the configuration at startup and creates the running world from it.
+
+You are not expected to write that file by hand. The editor writes it.
+
+The configuration says what exists. It never says what happens. Logic lives in the
+TypeScript you write.
 
 ## The editor is a separate application
 
 You launch the editor yourself, and it reads your project:
 
-- **the configuration**, so you build scenes by dragging actors around;
-- **your assets directory**, so an image you drop in becomes selectable straight away;
-- **your own components and systems**, so they show up in the inspector with their fields
-  laid out, alongside the built-in ones.
+- **The configuration**, so you can build scenes by dragging actors around.
+- **Your assets directory**, so an image you drop in becomes selectable straight away.
+- **Your own components and systems**, so they appear in the inspector with their fields laid
+  out, next to the built-in ones.
 
-That last one is what makes the editor useful on a real project rather than on a demo, and
-it needs no wiring from you.
+The third one is what makes the editor useful on a real project. You do not have to wire it
+up.
 
-It writes to your project too: ask it for a new component, system or behavior and the file
-lands in your source, already visible to both the game and the inspector.
+The editor writes to your project too. Ask it for a new component, system or behavior and the
+file lands in your source. Both the game and the inspector pick it up.
 
 <figure class="screenshot">
   <Image
@@ -43,8 +52,8 @@ lands in your source, already visible to both the game and the inspector.
   />
   <figcaption>
     The editor: the scene tree, the viewport, and the inspector for the selected actor.
-    `Movement` there is a component from the game's own source, listed among the engine's
-    without any distinction.
+    `Movement` there is a component from the game's own source. The inspector lists it
+    exactly like the engine's own components.
   </figcaption>
 </figure>
 
@@ -56,29 +65,29 @@ lands in your source, already visible to both the game and the inspector.
 
 ## What comes with it
 
-- **Built-in systems** for rendering, physics, character movement, interpolation,
-  animation, audio, keyboard and mouse input, cameras, behaviors and mounting a user
-  interface.
-- **Built-in components** for them to read — transforms, sprites, meshes, text, shapes,
-  colliders, rigid and character bodies, cameras, audio sources and the rest.
+- **Built-in systems** for rendering, physics, character movement, interpolation, animation,
+  audio, keyboard and mouse input, cameras, behaviors and mounting a user interface.
+- **Built-in components** for those systems to read: transforms, sprites, meshes, text,
+  shapes, colliders, rigid and character bodies, cameras, audio sources and the rest.
 
-Nothing about them is privileged: they are the same kind of class you write yourself.
-Enable the systems you need, ignore the others, and add your own alongside them.
+The built-in classes get no special treatment from the engine. They are the same kind of
+class you write yourself. Enable the systems you need, ignore the others, and add your own
+next to them.
 
 ## Where it fits
 
 Dacha suits 2D browser games where you want a visual scene editor without adopting a large
 engine, and where the game logic is comfortable in TypeScript. It has been used to build
-[games for game jams](/resources/examples/), which is the workload it is shaped around:
-small teams, short timelines, and a browser as the target.
+[games for game jams](/resources/examples/). That is the workload it is shaped around: small
+teams, short timelines, and a browser as the target.
 
 ## When not to use it
 
 - **It is 2D only.** There is no 3D pipeline and none is planned.
-- **The target is the browser.** There is no console export and no native desktop or
-  mobile packaging, though browser games do run on mobile.
-- **It is a small project.** There is no asset store, no plugin marketplace, and no
-  commercial support.
+- **The target is the browser.** There is no console export and no native desktop or mobile
+  packaging. Browser games do run on mobile browsers.
+- **It is a small project.** There is no asset store, no plugin marketplace, and no commercial
+  support.
 
 If any of those is a requirement, a larger engine will serve you better.
 
@@ -87,5 +96,5 @@ Breaking changes land between minor versions. There are
 [migration notes](/reference/migration/) for each one, but you should expect to read them.
 :::
 
-If none of that rules it out, [installation & setup](/getting-started/installation/) gets a
-project running in a few minutes.
+If none of that rules it out, [installation](/getting-started/installation/) gets a project
+running in a few minutes.

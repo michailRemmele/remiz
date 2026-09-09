@@ -1,5 +1,5 @@
 ---
-title: "Configuring systems & options"
+title: "Systems & global options"
 description: "Choose which systems run and tune the global options."
 ---
 

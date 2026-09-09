@@ -129,7 +129,7 @@ Broad-phase internals and the collision-detection pipeline are deliberately left
 They are implementation detail and they change.
 
 Bodies are currently always simulated. Per-body sleeping was removed and will return as an
-island-based implementation, so do not write code that depends on either behaviour.
+island-based implementation, so do not write code that depends on either behavior.
 
 ## See also
 

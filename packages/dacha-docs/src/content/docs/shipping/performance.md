@@ -1,5 +1,5 @@
 ---
-title: "Performance & tuning"
+title: "Performance"
 description: "Measure a Dacha game and tune the settings that matter."
 ---
 
