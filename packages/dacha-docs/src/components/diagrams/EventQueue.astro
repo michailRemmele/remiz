@@ -3,7 +3,7 @@ import DiagramFigure from './DiagramFigure.astro';
 ---
 
 <DiagramFigure
-  caption="dispatchEvent puts the event in a queue rather than delivering it. The queue drains at the top of the next frame, before any fixedUpdate, in the order things were dispatched. dispatchEventImmediately skips all of this and runs the listeners on the spot."
+  caption="dispatchEvent puts the event in a queue, which drains at the top of the next frame. dispatchEventImmediately skips the queue."
 >
   <svg viewBox="0 0 720 134" role="img" xmlns="http://www.w3.org/2000/svg">
     <title>

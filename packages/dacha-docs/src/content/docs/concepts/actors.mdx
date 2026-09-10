@@ -1,15 +1,13 @@
 ---
-title: "Actors & Transform"
+title: "Actors"
 description: "How an actor holds components, where it sits in the scene tree, and how to create one while the game runs."
 ---
 
 import TransformSpaces from '../../../components/diagrams/TransformSpaces.astro';
 
-Every actor is created with a `Transform`. Everything else comes from the components you
-attach to it.
+An actor is the game object. Everything it does comes from the components attached to it.
 
-This page covers what you do with an actor from code. You read and change its components,
-place it, find it, and create or destroy it while the game runs.
+This page covers how to work with actors from code. You can read and change their components, place them, find them, and create or destroy them while the game is running.
 
 ## Reading components
 
@@ -22,11 +20,12 @@ const transform = actor.getComponent(Transform);
 const sprite = actor.getComponent(Sprite);
 ```
 
-Passing the class is what lets TypeScript infer the component's type, so
-`transform.world.position.x` is checked at compile time. `getComponent` also accepts the
-component's name as a string, but then you get no type at all. Pass the class.
+The class is also the type, so the result needs no cast.
 
-An actor may not have the component you ask for. Guard when it is optional:
+:::caution
+`getComponent` is typed as returning the component, not `Component | undefined`. At runtime it
+returns `undefined` when the actor does not have the component, and TypeScript will not remind
+you to check. Write the guard yourself when the component is optional.
 
 ```ts
 const sprite = actor.getComponent(Sprite);
@@ -34,11 +33,6 @@ if (!sprite) {
   return;
 }
 ```
-
-:::caution
-`getComponent` is typed as returning the component, not `Component | undefined`. TypeScript
-will not remind you to check. At runtime the value is `undefined` when the actor does not have
-the component. If you ask for a component an actor might not have, write the guard yourself.
 :::
 
 ## Changing which components an actor has
@@ -58,20 +52,15 @@ actor.removeComponent(Stunned);
 `setComponent` replaces any component of the same class the actor already has.
 `removeComponent` takes the class, and does nothing if the actor does not have it.
 
-Both take effect at once. The engine announces both immediately instead of putting them in the
-event queue. That is what keeps queries correct. A system that filters on `Stunned` sees the
-actor in its results on the very next line, not on the next frame. So attaching a marker
-component is a workable way to move an actor in and out of a system's reach.
+Both take effect at once. A system that acts on actors with `Stunned` sees the change on the
+same tick, not on the next frame. See [selecting the actors to act
+on](/concepts/systems/#selecting-the-actors-to-act-on).
 
-## Transform is always there
+## Transform
 
-`Transform` is the one component every actor has. It holds position, rotation and scale.
-Almost everything else builds on it. The renderer draws at its position, physics moves it, and
-the camera follows it.
-
-It is also the one built-in component that belongs to no system. That is why it is documented
-here and not on a system page. Every other component is documented next to the system that
-reads it. See the [components index](/reference/components/).
+Every actor has a `Transform`. You never add it, and you cannot remove it. It is the one
+component that is always there, and it holds position, rotation and scale. The renderer draws
+at its position, physics moves it, and the camera follows it.
 
 ### Local and world
 
@@ -97,50 +86,17 @@ transform.local.position.x += 10;
 Both are readable **and** writable, on `position`, `rotation` and `scale` alike. When you
 write to `world`, the engine converts the value back into local coordinates through the
 parent's transform. So you can place an actor at an absolute point without walking the
-hierarchy yourself.
-
-:::caution
-Assign to the axis, not to the whole vector. `position` and `scale` are objects with `x` and
-`y` accessors that do the conversion and mark the transform dirty. Replacing the object throws
-those accessors away.
-
-```ts
-transform.world.position.x = 100;   // correct
-transform.world.position.y = 40;
-
-transform.world.position = { x: 100, y: 40 };   // wrong: breaks the transform
-```
-:::
+hierarchy yourself. The [`Transform` reference](/reference/components/#transform) lists the
+exact fields and the units they use.
 
 An actor can have the scene as its parent instead of another actor. Such an actor has no
 parent transform, so its `local` and `world` values are identical. That is why the difference
 is easy to miss until you nest something for the first time.
 
 Converting between the two is a composition, not an addition. Adding a child's offset to its
-parent's offset looks correct until the parent rotates. Then the child spins around its own
-centre and stays where it was, instead of swinging around the parent. `world` is composed
-through the parent's whole transform, rotation and scale included. That is what makes a weapon
-travel with the arm holding it.
-
-### Degrees and radians
-
-The editor and the code use different units for rotation. This catches everyone once:
-
-| Where | Unit |
-| --- | --- |
-| `rotation` in the configuration and the inspector | degrees |
-| `local.rotation`, `world.rotation` | radians |
-| `local.rotationDeg`, `world.rotationDeg` | degrees |
-
-```ts
-transform.local.rotationDeg = 90;
-transform.local.rotation = Math.PI / 2; // the same thing
-```
-
-:::note
-The configuration also spells the fields differently. It writes a `Transform` as `offset`,
-`rotation` and `scale`. At runtime `offset` becomes `local.position`.
-:::
+parent's offset looks correct until the parent rotates. `world` is composed through the
+parent's whole transform, rotation and scale included. That is what makes a weapon travel with
+the arm holding it.
 
 ## The hierarchy
 
@@ -155,23 +111,18 @@ that provides the hierarchy.
 
 ## Finding actors
 
-By name, searching the whole subtree by default:
+By name, or by an id you stored earlier:
 
 ```ts
 const player = scene.findChildByName('Player');
-```
-
-By id, when you have stored one:
-
-```ts
 const actor = scene.findChildById(savedId);
 ```
 
-Both return `undefined` when nothing matches, so check the result. Pass `false` as the second
-argument to search only the direct children.
+Both search the whole subtree and return `undefined` when nothing matches.
 
 To find actors by the components they have rather than by name, use a query instead. That is
-what systems do. See [ECS in Dacha](/concepts/ecs/).
+what systems do. See [selecting the actors to act
+on](/concepts/systems/#selecting-the-actors-to-act-on).
 
 ## Creating and destroying actors
 
@@ -209,12 +160,7 @@ To destroy an actor, detach it from its parent. It takes its own children with i
 actor.remove();
 ```
 
-:::caution
-The engine announces appends and removals immediately, so a query built around the affected
-actors is correct on the next line. `getActors()` returns the query's own live `Set`, not a
-copy. Spawning or removing an actor while you iterate that `Set` mutates the collection you
-are looping over. Copy it first when the body of the loop can do either.
-:::
+Appends and removals take effect at once, on the same tick.
 
 ## Actors are event targets
 

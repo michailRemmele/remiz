@@ -3,7 +3,7 @@ import DiagramFigure from './DiagramFigure.astro';
 ---
 
 <DiagramFigure
-  caption="An event dispatched on an actor is offered to every level above it in turn. The event's target is always the actor it started from, while currentTarget is the level being visited. Calling stopPropagation ends the climb, though listeners already attached to the current level still run."
+  caption="The path an event takes from the actor it was dispatched on, up through the parent actor and the scene, to the world."
 >
   <svg viewBox="0 0 720 276" role="img" xmlns="http://www.w3.org/2000/svg">
     <title>

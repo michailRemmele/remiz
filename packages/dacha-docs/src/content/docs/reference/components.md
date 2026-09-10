@@ -28,12 +28,45 @@ page that explains it in context.
 | `RigidBody` | Simulated body with mass and velocity | [Physics](/systems/physics/) |
 | `Shape` | Vector geometry with fill and stroke | [Rendering](/systems/rendering/) |
 | `Sprite` | An image from a texture asset | [Rendering](/systems/rendering/) |
-| `Transform` | Position, rotation and scale | [Actors](/concepts/actors/) |
+| `Transform` | Position, rotation and scale | [Below](#transform) |
 
-## The exception
+## `Transform`
 
-`Transform` belongs to no system. Every actor has one, and almost everything else reads it,
-which is why it is documented with [actors](/concepts/actors/) rather than under a system.
+`Transform` belongs to no system, so it has no system page to live on. [Actors](/concepts/actors/#transform)
+explains what `local` and `world` mean. This is the field list.
+
+The configuration and the runtime object spell the same values differently:
+
+| Where | Field | Unit |
+| --- | --- | --- |
+| Configuration and inspector | `offset` | pixels |
+| Configuration and inspector | `rotation` | degrees |
+| Configuration and inspector | `scale` | factor |
+| Runtime | `local.position`, `world.position` | pixels |
+| Runtime | `local.rotation`, `world.rotation` | radians |
+| Runtime | `local.rotationDeg`, `world.rotationDeg` | degrees |
+| Runtime | `local.scale`, `world.scale` | factor |
+
+`offset` becomes `local.position` at runtime. Rotation is stored in radians, and `rotationDeg`
+reads and writes the same value in degrees:
+
+```ts
+transform.local.rotationDeg = 90;
+transform.local.rotation = Math.PI / 2; // the same thing
+```
+
+:::caution
+Assign to the axis, not to the whole vector. `position` and `scale` are objects with `x` and
+`y` accessors that convert between local and world space and mark the transform dirty.
+Replacing the object throws those accessors away.
+
+```ts
+transform.world.position.x = 100;   // correct
+transform.world.position.y = 40;
+
+transform.world.position = { x: 100, y: 40 };   // wrong: breaks the transform
+```
+:::
 
 ## Your own components
 

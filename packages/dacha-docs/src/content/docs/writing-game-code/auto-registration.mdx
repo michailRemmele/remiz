@@ -131,6 +131,42 @@ The editor is equally indifferent. It compiles your scripts with its own bundler
 the regexes in the editor configuration, and asks only two things of a file: the suffix,
 and a default export.
 
+## What the decorators cost your game
+
+Nothing at runtime. The decorators are the one part of the editor that a game's own code
+imports. Outside the editor each one sets the static name on the class and returns:
+
+```ts
+import { Component } from 'dacha';
+import { DefineComponent, DefineField } from 'dacha-workbench/decorators';
+
+interface HealthConfig {
+  points: number;
+}
+
+@DefineComponent({ name: 'Health' })
+export default class Health extends Component {
+  @DefineField({ initialValue: 100 })
+  points: number;
+
+  constructor(config: HealthConfig) {
+    super();
+
+    this.points = config.points;
+  }
+}
+```
+
+In a built game, `@DefineComponent` sets `Health.componentName` and stops. `@DefineField` does
+nothing at all. The decorators build field and widget metadata only when the editor is the
+thing importing the class, which they detect at runtime.
+
+:::note
+This is also why the decorators are planned to move into the `dacha` package. Naming a class is
+an engine concern, and a game should not have to depend on the editor to do it. See the
+[migration notes](/reference/migration/).
+:::
+
 ## The round trip
 
 The payoff is the loop between the editor and your project.

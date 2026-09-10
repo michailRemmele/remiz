@@ -132,17 +132,8 @@ system is constructed, and they stay for the whole run.
 So call `systemApi.get` at the point of use. Do not resolve an API in a constructor and keep
 the result.
 
-### What happens when it is missing
-
-`get` throws when nothing is registered for that class, and the message names the class. That
-usually means one of two things:
-
-- You did not pass the system that provides the API to the `Engine`, or did not list it in
-  `systems` in the configuration.
-- You asked before the system registered, or after it unregistered. See the section above.
-
-Throwing here is deliberate. A missing API returned as `undefined` would crash somewhere else,
-several frames later.
+`get` throws when nothing is registered for that class. Either the system is not in the
+configuration, or you asked outside the window above.
 
 ### Why the indirection
 

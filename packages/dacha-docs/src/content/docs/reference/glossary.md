@@ -16,7 +16,8 @@ Dacha says *actor*. See [actors](/concepts/actors/).
 
 A live set of the actors in a scene matching a filter — either a list of components or a
 predicate. It keeps itself up to date as actors and components come and go, so a system
-does not have to track them by hand. See [ECS in Dacha](/concepts/ecs/).
+does not have to track them by hand. See [selecting the actors to act
+on](/concepts/systems/#selecting-the-actors-to-act-on).
 
 `ActorCollection` is the earlier version of the same idea, with a components-only filter.
 It is **deprecated**; write new code against `ActorQuery`.

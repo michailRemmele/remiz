@@ -78,15 +78,12 @@ a template at all. See the [templates workflow](/editor/templates/).
 
 ## `assets`
 
-The project's textures, audio clips and bitmap fonts. Each entry has an `id`, a `name`, a `kind`
-and the data that kind needs. You pass the classes for the kinds you use to the `Engine`,
-alongside your components and systems. The engine turns the list into a registry that every
-system receives in its options.
+The project's textures, audio clips and bitmap fonts. The engine turns the list into a registry
+that every system receives in its options.
 
 :::note
-Asset handling is being reworked, so this documentation does not yet describe the kinds or the
-loading path in detail. The [migration notes](/reference/migration/) record what has already
-changed.
+Asset handling is being reworked, so the entries and the loading path are not documented yet.
+The [migration notes](/reference/migration/) record what has already changed.
 :::
 
 ## `systems`

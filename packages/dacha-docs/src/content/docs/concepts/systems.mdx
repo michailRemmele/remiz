@@ -1,6 +1,6 @@
 ---
 title: "Systems"
-description: "The two kinds of system, and the single question that decides between them."
+description: "The two kinds of system, and how a system selects the actors it acts on."
 ---
 
 import { LinkCard } from '@astrojs/starlight/components';
@@ -93,6 +93,70 @@ A scene system also receives `scene` and `world`. A world system receives `world
 
 The engine merges the system's own `options` from the configuration into the same object. So a
 system reads its settings from there, next to these fields.
+
+## Selecting the actors to act on
+
+A system does not keep its own list of actors. It builds an `ActorQuery` once, in the
+constructor, and reads it each time it runs:
+
+```ts
+import { ActorQuery, SceneSystem, Transform } from 'dacha';
+import type { SceneSystemOptions } from 'dacha';
+
+import Velocity from '../components/velocity.component';
+
+export default class MovementSystem extends SceneSystem {
+  private actorQuery: ActorQuery;
+
+  constructor(options: SceneSystemOptions) {
+    super();
+
+    this.actorQuery = new ActorQuery({
+      scene: options.scene,
+      filter: [Transform, Velocity],
+    });
+  }
+
+  update(): void {
+    for (const actor of this.actorQuery.getActors()) {
+      const transform = actor.getComponent(Transform);
+      const velocity = actor.getComponent(Velocity);
+      // …
+    }
+  }
+}
+```
+
+The query keeps itself up to date. It adds an actor when the actor enters the scene, and
+removes it when the actor leaves. It re-tests an actor when a component is attached to it or
+detached from it. So do not rebuild the query each frame.
+
+These changes reach the query at once, not on the next frame. Attaching a marker component
+puts the actor in the results on the very next line, which makes a marker a workable way to
+move an actor in and out of a system's reach.
+
+A list of components is not always enough. The filter can also be a function:
+
+```ts
+const query = new ActorQuery({
+  scene,
+  filter: (actor) => Boolean(actor.getComponent(Enemy)) && actor.name.startsWith('boss'),
+});
+```
+
+:::caution
+The engine runs the predicate when an actor enters the scene and when its components change.
+It never runs the predicate because a value inside a component changed. A filter on
+`transform.world.position.y > 100` checks the position once, when the actor appears. After
+that the result goes stale as the actor moves. Filter on what an actor *is*, not on what it is
+doing right now.
+:::
+
+:::caution
+`getActors()` returns the query's own live `Set`, not a copy. Spawning or removing an actor
+while you iterate that `Set` mutates the collection you are looping over. Copy it first when
+the body of the loop can do either.
+:::
 
 ## Cleaning up
 

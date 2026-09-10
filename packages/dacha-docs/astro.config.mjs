@@ -10,6 +10,7 @@ export default defineConfig({
   base: '/',
   redirects: {
     '/introduction/glossary': '/reference/glossary/',
+    '/concepts/editor-role': '/editor/interface-tour/',
   },
   integrations: [
     starlight({
@@ -78,11 +79,10 @@ export default defineConfig({
             { slug: 'concepts/ecs' },
             { slug: 'concepts/actors' },
             { slug: 'concepts/scenes-and-world' },
+            { slug: 'concepts/events' },
             { slug: 'concepts/systems' },
             { slug: 'concepts/game-loop' },
-            { slug: 'concepts/events' },
             { slug: 'concepts/configuration' },
-            { slug: 'concepts/editor-role' },
           ],
         },
         {

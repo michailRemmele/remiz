@@ -5,11 +5,10 @@ description: "What entity-component-system means here, and where Dacha departs f
 
 import EcsRelationships from '../../../components/diagrams/EcsRelationships.astro';
 
-Entity-component-system separates what a thing *is* from what a thing *does*.
-
-Many engines build a deep class hierarchy instead: `Player extends Character extends
-GameObject`. ECS does not. An entity is a plain object that holds data. The logic lives in
-separate units. Each unit runs over every entity that holds a certain combination of data.
+Traditional engines often define game objects through class hierarchies: `Player extends
+Character extends GameObject`. ECS defines them through composition instead. An object is a
+set of components. The logic lives in separate units, and each unit runs over every object
+that holds a certain combination of components.
 
 Dacha follows this idea. It uses its own names, and it adds one thing the textbook version
 does not have.
@@ -19,23 +18,21 @@ does not have.
 ## Actor, not entity
 
 Dacha calls the game object an **actor**. An actor holds components. It can hold child actors.
-It has an id and a name.
+It has an id and a name. The name `Entity` is taken by an internal base class that actors,
+scenes and the world share.
 
-The word "entity" is already taken. `Entity` is an internal base class. Actors, scenes and the
-world all extend it, and it gives them the hierarchy and the event-target methods. When this
-documentation says actor, it means the game object.
-
-## Components hold data and nothing else
+## Components hold the data
 
 A component is a set of values attached to an actor. `Transform` holds a position, a rotation
 and a scale. `Sprite` holds the image to draw. `Collider` holds a shape.
 
-A component contains no logic. This is not a style rule. It follows from how the engine works.
-The whole game world is [described by data](/concepts/configuration/), and a visual editor
-reads and writes that data. You cannot save a method into that file, and the editor cannot
-show one in the inspector.
+A component can also have small helpers that read its own values, and it can hold state that
+exists only at runtime. What does not belong in a component is game logic: decisions,
+per-frame work, reaching into other actors.
 
-If logic starts to appear in a component, move it to a system or a behavior.
+The reason is the file. The whole game world is [described by data](/concepts/configuration/),
+and a visual editor reads and writes that data. Only fields survive that trip. You cannot save
+a method into the configuration, and the editor cannot show one in the inspector.
 
 ## Systems hold the logic
 
@@ -43,60 +40,9 @@ A system runs every frame and acts on the actors it cares about. It does not bui
 by hand. It declares which components it needs, and it receives every actor that has them,
 including actors created later.
 
-Build the query once, in the constructor. Read it each time the system runs:
-
-```ts
-import { ActorQuery, SceneSystem, Transform } from 'dacha';
-import type { SceneSystemOptions } from 'dacha';
-
-import Velocity from '../components/velocity.component';
-
-export default class MovementSystem extends SceneSystem {
-  private actorQuery: ActorQuery;
-
-  constructor(options: SceneSystemOptions) {
-    super();
-
-    this.actorQuery = new ActorQuery({
-      scene: options.scene,
-      filter: [Transform, Velocity],
-    });
-  }
-
-  update(): void {
-    for (const actor of this.actorQuery.getActors()) {
-      const transform = actor.getComponent(Transform);
-      const velocity = actor.getComponent(Velocity);
-      // …
-    }
-  }
-}
-```
-
-The query keeps itself up to date. It adds an actor when the actor enters the scene, and
-removes it when the actor leaves. It re-tests an actor when a component is attached to it or
-detached from it. So do not rebuild the query each frame. [Writing a
-system](/writing-game-code/systems/) shows the whole file, cleanup included.
-
-A list of components is not always enough. The filter can also be a function:
-
-```ts
-const query = new ActorQuery({
-  scene,
-  filter: (actor) => Boolean(actor.getComponent(Enemy)) && actor.name.startsWith('boss'),
-});
-```
-
-:::caution
-The engine runs the predicate when an actor enters the scene and when its components change.
-It never runs the predicate because a value inside a component changed. A filter on
-`transform.world.position.y > 100` checks the position once, when the actor appears. After
-that the result goes stale as the actor moves. Filter on what an actor *is*, not on what it is
-doing right now.
-:::
-
-There are two kinds of system. Which one you extend depends on whether the system has to
-survive a scene change. That has [its own page](/concepts/systems/).
+There are two kinds of system, and one question decides between them: does this need to
+survive a scene change? Both kinds, and the way a system selects its actors, are covered on
+[the systems page](/concepts/systems/).
 
 ## Behaviors are the addition
 
@@ -118,15 +64,3 @@ See [behaviors](/systems/behaviors/).
 
 Systems and behaviors have the same two per-frame hooks, `update` and `fixedUpdate`. The
 difference is how many actors one instance covers.
-
-## Why the shape is the way it is
-
-Almost every rule on this page comes from one decision. The game world is described by data,
-and a visual editor edits that data.
-
-- Components must survive being written to JSON, so they hold no logic.
-- Systems are listed and configured in the same file, so they have names and take options.
-- Actors are arranged in a tree in the editor, so they form a hierarchy.
-
-The editor is not a separate authoring tool bolted onto a code-first engine. It edits the same
-data the engine runs.
