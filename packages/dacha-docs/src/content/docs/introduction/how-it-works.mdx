@@ -135,7 +135,7 @@ systems in two separate phases.
 
 <FrameDiagram />
 
-**`update`** runs once per rendered frame and receives a variable time delta.
+**`update`** runs once per rendered frame, at whatever rate the browser gives you.
 **`fixedUpdate`** runs on its own clock, independent of the frame rate, so that a game behaves
 the same on a 60 Hz laptop and a 144 Hz monitor. When you write a system you choose the
 phase.

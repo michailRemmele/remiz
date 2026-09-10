@@ -38,9 +38,10 @@ attached through the `Behaviors` component and run by the behavior system. See
 
 ### Component
 
-Plain data attached to an actor — a position, a sprite, a collider. Components hold no
-logic; systems and behaviors read and write them. Every component class carries a static
-`componentName`, which is the string the configuration refers to it by. See
+Plain data attached to an actor — a position, a sprite, a collider. A component can carry a
+small helper over its own values, but the game logic lives in systems and behaviors, which
+read and write it. Every component class carries a static `componentName`, which is the
+string the configuration refers to it by. See
 [writing a component](/writing-game-code/components/).
 
 ### Configuration
@@ -88,9 +89,9 @@ the editor's Project settings. `play()` refuses to start without one. See
 
 ### System
 
-A logic unit that runs on every frame, in `update`, in `fixedUpdate`, or in both. There are
-two kinds. A **scene system** is created and destroyed with the scene it belongs to, and
-holds game logic. A **world system** outlives scene changes, and is what rendering, input
+A logic unit that runs as part of the game loop, in `update`, in `fixedUpdate`, or in both.
+There are two kinds. A **scene system** is created and destroyed with the scene it belongs to,
+and holds game logic. A **world system** outlives scene changes, and is what rendering, input
 and audio are built as. Every system class carries a static `systemName`. See
 [systems](/concepts/systems/).
 

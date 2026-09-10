@@ -57,7 +57,7 @@ when something resets and you do not know why.
 | `fixedUpdate` | nothing | At a fixed rate. May run zero or several times per frame |
 | `update` | nothing | Once per rendered frame |
 | `onSceneExit` | `scene` | As the scene stops being active |
-| `onSceneDestroy` | `scene` | As the scene is torn down. Remove listeners here |
+| `onSceneDestroy` | `scene` | As the scene is torn down. A scene system removes its listeners here |
 
 `update` and `fixedUpdate` take no arguments. Read the frame's timing from the `time` object
 the system was constructed with.
@@ -127,13 +127,21 @@ export default class MovementSystem extends SceneSystem {
 }
 ```
 
-The query keeps itself up to date. It adds an actor when the actor enters the scene, and
-removes it when the actor leaves. It re-tests an actor when a component is attached to it or
-detached from it. So do not rebuild the query each frame.
+A query belongs to one scene. It matches the actors in that scene only, and it keeps itself up
+to date. It adds an actor when the actor enters the scene, and removes it when the actor
+leaves. It re-tests an actor when a component is attached to it or detached from it. So do not
+rebuild the query each frame.
 
 These changes reach the query at once, not on the next frame. Attaching a marker component
 puts the actor in the results on the very next line, which makes a marker a workable way to
 move an actor in and out of a system's reach.
+
+A world system has no `scene` in its options, so it cannot build a query in its constructor. It
+builds one in `onSceneEnter` and destroys it in `onSceneExit` instead, once for every scene.
+
+A query is an event target of its own. It dispatches `AddActor` and `RemoveActor` on itself,
+immediately, when an actor starts or stops matching. Listen there when a system has to set
+something up per actor rather than sweep the whole set each frame.
 
 A list of components is not always enough. The filter can also be a function:
 
@@ -160,8 +168,10 @@ the body of the loop can do either.
 
 ## Cleaning up
 
-Whatever a system subscribes to in its constructor, it unsubscribes from in `onSceneDestroy`.
-Nothing does it for you.
+Whatever a system subscribes to in its constructor, it unsubscribes from when the system goes
+away. Nothing does it for you. For a scene system that is `onSceneDestroy`. For a world system
+it is `onWorldDestroy`. A world system receives `onSceneDestroy` as well, once for every scene,
+so cleaning up there would drop its listeners at the first scene change.
 
 For a scene system, this matters most for anything that outlives the scene. A listener on the
 **world** stays registered after the scene is gone, and the engine builds the system again on

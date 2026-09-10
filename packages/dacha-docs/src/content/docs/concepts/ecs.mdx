@@ -31,14 +31,16 @@ exists only at runtime. What does not belong in a component is game logic: decis
 per-frame work, reaching into other actors.
 
 The reason is the file. The whole game world is [described by data](/concepts/configuration/),
-and a visual editor reads and writes that data. Only fields survive that trip. You cannot save
-a method into the configuration, and the editor cannot show one in the inspector.
+and a visual editor reads and writes that data. Only the fields you declare survive that trip.
+You cannot save a method into the configuration, and the editor cannot show one in the
+inspector. Everything else on the component is rebuilt from scratch each time the engine
+constructs it.
 
 ## Systems hold the logic
 
-A system runs every frame and acts on the actors it cares about. It does not build that list
-by hand. It declares which components it needs, and it receives every actor that has them,
-including actors created later.
+A system runs as part of the game loop and acts on the actors it cares about. It does not
+build that list by hand. It declares which components it needs, and it receives every actor
+that has them, including actors created later.
 
 There are two kinds of system, and one question decides between them: does this need to
 survive a scene change? Both kinds, and the way a system selects its actors, are covered on

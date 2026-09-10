@@ -48,8 +48,9 @@ decided at runtime and never here.
 
 ## `startSceneId`
 
-The scene the engine opens with. `play()` throws when this is unset, which is the most common
-error on a brand new project.
+The scene the engine opens with. `play()` is async, so it rejects when this is unset rather
+than throwing where you called it. That is the most common error on a brand new project, and it
+surfaces as an unhandled rejection in the console.
 
 ## Identifiers
 
@@ -114,6 +115,9 @@ A name here with no matching class is not an error. The engine writes `System no
 the console and runs without it. So a system you forgot to pass to `Engine` shows up as a game
 that quietly does nothing, not as a crash. Check the console first when logic that should be
 running is not.
+
+Components are the opposite. An actor that names a component class you did not pass to `Engine`
+crashes while the scene is being built.
 :::
 
 The engine merges an entry's `options` into the object the system's constructor receives. That is

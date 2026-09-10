@@ -46,7 +46,14 @@ world.dispatchEvent(LoadScene, { id: LEVEL_TWO_SCENE_ID });
 ```
 
 That one line covers the common case. It builds the next scene, enters it, and destroys the
-one you left. Underneath, a scene moves between three states, and each move is its own event.
+one you left.
+
+The change does not happen on that line. `LoadScene` is a [queued
+event](/concepts/events/#delivery-happens-on-the-next-frame), so the engine starts the change at
+the top of the next frame. Loading is then asynchronous. The current scene keeps running until
+the new one is ready. Wait for `SceneEntered` if you need to know when the switch is done.
+
+Underneath, a scene moves between three states, and each move is its own event.
 
 <SceneStates />
 
@@ -133,7 +140,8 @@ So call `systemApi.get` at the point of use. Do not resolve an API in a construc
 the result.
 
 `get` throws when nothing is registered for that class. Either the system is not in the
-configuration, or you asked outside the window above.
+configuration, or you asked outside the window above. Use `systemApi.has(PhysicsAPI)` when an
+API is genuinely optional for your game.
 
 ### Why the indirection
 

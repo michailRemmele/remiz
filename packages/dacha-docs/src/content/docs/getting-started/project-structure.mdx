@@ -56,8 +56,9 @@ out when the game runs. The class must also be the **default export**.
 Components and systems are the engine's own vocabulary. A [behavior](/systems/behaviors/) is
 not. A behavior belongs to `BehaviorSystem` and holds logic for a single actor. The entry
 point collects behaviors with the same kind of glob, then passes them to `BehaviorSystem`
-through the engine's `resources`. Shaders and filter effects reach the `Renderer` the same
-way.
+through the engine's `resources`. Shaders and filter effects reach the `Renderer` through
+`resources` too, but the generated entry point does not glob them. Add that glob yourself the
+first time you write one.
 
 The editor scans for the same three suffixes plus two of its own, and every pattern is
 configurable. See the [configuration reference](/editor/config-reference/). For the whole

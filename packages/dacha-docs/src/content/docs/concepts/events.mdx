@@ -107,6 +107,13 @@ An event dispatched from inside a listener is an exception to the first point. T
 the queue until it is empty, so that event is delivered in the same drain, after the events
 already queued ahead of it. It does not wait for the next frame.
 
+:::caution
+The climb up the hierarchy happens at delivery, not at dispatch. Remove an actor in the same
+frame you dispatched an event on it, and the event still runs the listeners on that actor, but
+it reaches nothing above it. A listener on the scene never sees it. When you know the actor is
+about to be removed, dispatch on the scene instead, or use `dispatchEventImmediately`.
+:::
+
 Queuing is the right default. It keeps a dispatch cheap. It stops one event's handler from
 firing another event's handler in the middle of a loop over actors. And it makes the order of
 work in a frame predictable.
@@ -217,7 +224,8 @@ configuration reference](/editor/config-reference/).
 ## Removing listeners
 
 When you add a listener in a constructor, remove it when the thing that added it goes away.
-That is `onSceneDestroy` for a system, and `destroy` for a behavior. Nothing does it for you.
+That is `onSceneDestroy` for a scene system, `onWorldDestroy` for a world system, and `destroy`
+for a behavior. Nothing does it for you.
 
 It matters most for a listener on a target that outlives the thing that registered it. The
 world outlives every scene. The engine builds a scene system again every time its scene loads,

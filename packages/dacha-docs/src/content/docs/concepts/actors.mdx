@@ -5,9 +5,11 @@ description: "How an actor holds components, where it sits in the scene tree, an
 
 import TransformSpaces from '../../../components/diagrams/TransformSpaces.astro';
 
-An actor is the game object. Everything it does comes from the components attached to it.
+An actor is the game object. Every actor has an id, a name, a `Transform`, and a place in the
+scene tree. Everything else about it comes from the components attached to it.
 
-This page covers how to work with actors from code. You can read and change their components, place them, find them, and create or destroy them while the game is running.
+This page covers how to work with actors from code. You can read and change their components,
+place them, find them, and create or remove them while the game is running.
 
 ## Reading components
 
@@ -52,15 +54,18 @@ actor.removeComponent(Stunned);
 `setComponent` replaces any component of the same class the actor already has.
 `removeComponent` takes the class, and does nothing if the actor does not have it.
 
-Both take effect at once. A system that acts on actors with `Stunned` sees the change on the
-same tick, not on the next frame. See [selecting the actors to act
-on](/concepts/systems/#selecting-the-actors-to-act-on).
+Both take effect at once. For an actor that is already in the scene, a system that acts on
+actors with `Stunned` sees the change on the same tick, not on the next frame. See [selecting
+the actors to act on](/concepts/systems/#selecting-the-actors-to-act-on).
 
 ## Transform
 
-Every actor has a `Transform`. You never add it, and you cannot remove it. It is the one
-component that is always there, and it holds position, rotation and scale. The renderer draws
-at its position, physics moves it, and the camera follows it.
+The engine gives every actor a `Transform` when it creates it. It holds position, rotation and
+scale.
+
+You never add it. Do not remove it either. Nothing in the API stops you, but the renderer draws
+at its position, physics moves it, the camera follows it, and the hierarchy is measured through
+it.
 
 ### Local and world
 
@@ -148,19 +153,22 @@ to no hierarchy. No query matches it and no system touches it. That is the windo
 set it up. Append it to the scene for a free-standing actor, or to another actor to make it a
 child of that one.
 
-A spawned actor comes from the same template the editor shows you. So an actor spawned at
-runtime and an actor placed by hand are identical. A spawned actor also remembers where it
-came from, as `actor.templateId`.
+A spawned actor is built from the same template the editor shows you, children included. An
+actor placed in a scene by hand can carry per-instance changes on top of its template. A
+spawned one always starts with the template's own values. Either way the actor remembers where
+it came from, as `actor.templateId`.
 
 ### Destroying one
 
-To destroy an actor, detach it from its parent. It takes its own children with it:
+There is no `destroy` method on an actor. Detach it from its parent and it leaves the game,
+taking its own children with it:
 
 ```ts
 actor.remove();
 ```
 
-Appends and removals take effect at once, on the same tick.
+Appends and removals take effect at once, on the same tick. Queries drop the actor
+immediately, and `BehaviorSystem` destroys the behaviors attached to it.
 
 ## Actors are event targets
 

@@ -12,8 +12,8 @@ does not depend on frame rate.
 
 ## Two callbacks, two clocks
 
-**`update`** runs once per rendered frame and receives a variable time delta. It tracks the
-display.
+**`update`** runs once per rendered frame. The time it covers varies with the frame rate. It
+tracks the display.
 
 **`fixedUpdate`** runs at a fixed rate. In one frame it may run several times, once, or not at
 all. That depends on how much simulation time has accumulated since the last frame.
@@ -47,7 +47,7 @@ and the loop updates it once per frame. Every value on it is in **seconds**.
 | --- | --- | --- |
 | `deltaTime` | Time since the previous rendered frame | `update` |
 | `fixedDeltaTime` | The fixed step, a constant | `fixedUpdate` |
-| `elapsedTime` | Time the loop has been running | anywhere |
+| `elapsedTime` | Time the loop has been running, since it last started | anywhere but `fixedUpdate` |
 | `alpha` | How far the frame sits between the last two fixed steps, in `[0, 1)` | `update` |
 
 ```ts
@@ -81,10 +81,15 @@ that was scaled by it. Use it for presentation, and expect it to be uneven.
 not simulated when the frame was drawn. [Interpolation](/systems/interpolation/) already uses
 it to smooth transforms, so you need it only when you smooth something yourself.
 
+`elapsedTime` is the sum of the frame deltas since the loop last started. It is not wall-clock
+time: it is built from the same clamped values as `deltaTime`, so it falls behind real time
+whenever a frame runs long. `pause()` freezes it, and `play()` after a `pause()` resets it to
+zero, so do not use it as a save-game timer.
+
 :::caution
-The loop refreshes `deltaTime` and `alpha` after the frame's fixed steps have run and before
-`update`. Read inside `fixedUpdate`, both still hold the previous frame's values. Scale
-simulation by `fixedDeltaTime`, which is a constant and always correct.
+The loop refreshes `deltaTime`, `alpha` and `elapsedTime` after the frame's fixed steps have run
+and before `update`. Read inside `fixedUpdate`, all three still hold the previous frame's
+values. Scale simulation by `fixedDeltaTime`, which is a constant and always correct.
 :::
 
 ## Settings
@@ -94,13 +99,16 @@ These live under the `performance` entry in [`globalOptions`](/concepts/configur
 | Setting | Default | What it does |
 | --- | --- | --- |
 | `fixedUpdateRate` | 50 Hz | How often `fixedUpdate` runs |
-| `maxFPS` | uncapped | Upper bound on rendered frames |
+| `maxFPS` | uncapped | Upper bound on how often the loop runs |
 | `maxFrameDelta` | 250 ms | Largest frame gap the loop will believe |
 | `maxFixedUpdatesPerFrame` | 5 | Ceiling on catch-up steps in one frame |
 
 :::note
 A generated project's configuration carries `maxFPS: 0`. Zero and the engine's internal default
 both mean uncapped.
+
+A cap does not slow a frame down. It skips whole iterations of the loop, and on a skipped
+iteration nothing runs at all, event delivery included.
 :::
 
 The last two settings are safety rails rather than tuning knobs. When a tab goes into the
@@ -134,6 +142,10 @@ every scene change.
 
 Steps 5 and 6 repeat every frame for as long as the scene is active.
 
+Construction comes before all of this. The engine builds every world system before
+`onWorldLoad`, and it builds a scene's systems before that scene's `onSceneLoad`. So a
+constructor cannot rely on anything a hook does.
+
 Within one frame the order is fixed: the engine delivers [queued
 events](/concepts/events/#delivery-happens-on-the-next-frame) first, then runs every
 accumulated `fixedUpdate`, then `update`. So a system that reads state in `update` sees the
@@ -144,6 +156,12 @@ Within each of those phases, systems run in the order the configuration lists th
 
 ## Controlling the loop
 
-The engine exposes `play()`, `pause()` and `stop()`. `pause()` halts the loop without tearing
-anything down, which is what a pause menu wants. Call `play()` again to resume. `stop()` shuts
-the world down.
+The engine exposes `play()`, `pause()` and `stop()`.
+
+`pause()` halts the loop without tearing anything down, which is what a pause menu wants. Call
+`play()` again to resume the same world, in the same scene. Nothing drains the event queue while
+the loop is stopped, so events dispatched during a pause are delivered on the first frame after
+it.
+
+`stop()` destroys the world. Every scene and world destroy hook runs, and a later `play()`
+builds the whole game again from the configuration, starting at `startSceneId`.
