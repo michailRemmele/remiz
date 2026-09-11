@@ -71,7 +71,7 @@ transform.world.position = { x: 100, y: 40 };   // wrong: breaks the transform
 ## Your own components
 
 Components you write appear in the inspector alongside these. See
-[writing a component](/writing-game-code/components/).
+[writing a component](/game-code/components/).
 
 ## Field-level detail
 

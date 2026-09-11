@@ -34,7 +34,7 @@ the engine. See [the configuration](/concepts/configuration/).
 A logic unit attached to one actor, with its own `update` and `fixedUpdate`. A system is a
 single instance acting on many actors; a behavior is one instance per actor. Behaviors are
 attached through the `Behaviors` component and run by the behavior system. See
-[writing a behavior](/writing-game-code/behaviors/).
+[writing a behavior](/game-code/behaviors/).
 
 ### Component
 
@@ -42,7 +42,7 @@ Plain data attached to an actor — a position, a sprite, a collider. A componen
 small helper over its own values, but the game logic lives in systems and behaviors, which
 read and write it. Every component class carries a static `componentName`, which is the
 string the configuration refers to it by. See
-[writing a component](/writing-game-code/components/).
+[writing a component](/game-code/components/).
 
 ### Configuration
 

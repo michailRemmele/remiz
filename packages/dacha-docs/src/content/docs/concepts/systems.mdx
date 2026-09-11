@@ -178,11 +178,15 @@ For a scene system, this matters most for anything that outlives the scene. A li
 the next scene load, so you get a second copy. A listener on the **scene** disappears along
 with the scene, but removing it keeps the system's own lifecycle honest.
 
-Call `destroy()` on any `ActorQuery` in the same place. See [removing
+An `ActorQuery` follows the same rule, because a query is a set of listeners on its scene.
+It stops existing along with the scene it queries, so a scene system does not have to destroy
+its own query. Call `destroy()` when a query stops being useful while its scene is still
+alive: one you rebuild after a setting changes, or one a world system made for a scene the
+game has left but not unloaded. See [removing
 listeners](/concepts/events/#removing-listeners).
 
 <LinkCard
-  title="Writing a system"
+  title="Systems in code"
   description="The same ideas as a file you can copy: the class, the query, the decorator and the cleanup."
-  href="/writing-game-code/systems/"
+  href="/game-code/systems/"
 />

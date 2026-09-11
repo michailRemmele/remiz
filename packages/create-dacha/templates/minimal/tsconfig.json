@@ -14,7 +14,8 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
 
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "include": ["src", "vite.config.ts"]
 }

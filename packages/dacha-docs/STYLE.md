@@ -132,6 +132,37 @@ em dashes.
 
 Headings should describe the idea the reader is about to learn, using simple language.
 
+Page titles inside one sidebar section should not repeat the same leading word. Three pages
+called "Writing a component", "Writing a system" and "Writing a behavior" put the noise first
+and the subject last. Name the subject: "Components", "Systems", "Behaviors". The section
+heading above them already says what the group is about.
+
+## Who the reader is
+
+Write to one developer building their own game. Do not split the audience into roles and
+address them separately.
+
+Prefer:
+
+> You edit it in the inspector.
+
+Over:
+
+> A designer edits it in the inspector.
+
+"A designer", "the team", "your artist" all assume a division of labour the reader probably
+does not have.
+
+## Document what exists
+
+Describe the engine as it is today. Do not write about planned changes, deprecations or
+migrations from earlier versions.
+
+There are no users on older versions yet, so migration notes describe a problem nobody has.
+A note saying an API is "planned to move" ages badly in both directions: it is noise while it
+is true, and wrong the moment the move lands. Update the documentation when the change
+lands, not before.
+
 ## Important distinction
 
 Do not simplify technical meaning.

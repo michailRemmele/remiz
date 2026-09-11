@@ -11,6 +11,11 @@ export default defineConfig({
   redirects: {
     '/introduction/glossary': '/reference/glossary/',
     '/concepts/editor-role': '/editor/interface-tour/',
+    '/writing-game-code/auto-registration': '/game-code/auto-registration/',
+    '/writing-game-code/components': '/game-code/components/',
+    '/writing-game-code/systems': '/game-code/systems/',
+    '/writing-game-code/behaviors': '/game-code/behaviors/',
+    '/writing-game-code/inspector-fields': '/game-code/inspector-fields/',
   },
   integrations: [
     starlight({
@@ -86,16 +91,6 @@ export default defineConfig({
           ],
         },
         {
-          label: 'Writing Game Code',
-          items: [
-            { slug: 'writing-game-code/auto-registration' },
-            { slug: 'writing-game-code/components' },
-            { slug: 'writing-game-code/systems' },
-            { slug: 'writing-game-code/behaviors' },
-            { slug: 'writing-game-code/inspector-fields' },
-          ],
-        },
-        {
           label: 'The Editor',
           items: [
             { slug: 'editor/interface-tour' },
@@ -105,6 +100,17 @@ export default defineConfig({
             { slug: 'editor/generating-scripts' },
             { slug: 'editor/running-and-debugging' },
             { slug: 'editor/config-reference' },
+          ],
+        },
+        {
+          label: 'Game Code',
+          items: [
+            { slug: 'game-code/auto-registration' },
+            { slug: 'game-code/components' },
+            { slug: 'game-code/systems' },
+            { slug: 'game-code/behaviors' },
+            { slug: 'game-code/inspector-fields' },
+            { slug: 'game-code/custom-widgets' },
           ],
         },
         {
@@ -138,7 +144,6 @@ export default defineConfig({
           items: [
             { slug: 'reference/glossary' },
             { slug: 'reference/components' },
-            { slug: 'reference/migration' },
             { label: 'API Reference', link: '/api/' },
           ],
         },
