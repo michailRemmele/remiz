@@ -81,6 +81,13 @@ it. See [scenes and the world](/concepts/scenes-and-world/).
 A named layer deciding what is drawn in front of what. Every drawable component names one,
 and the list of layers is a global option. See [rendering](/systems/rendering/).
 
+### Starter project
+
+The project `create-dacha` writes: one scene, a component, a system and an HTML overlay, in
+about a hundred lines. It is a running game, and the layout the documentation assumes when it
+shows project code. It is not a [template](#template), which is an engine concept. See
+[installation](/getting-started/installation/).
+
 ### Start scene
 
 The scene the engine opens with — `startSceneId` in the configuration, **Start Scene** in

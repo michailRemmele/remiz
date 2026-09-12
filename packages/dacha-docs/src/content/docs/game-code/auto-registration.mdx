@@ -9,7 +9,7 @@ import newComponentPoster from '../../../assets/editor/editor-new-component.post
 
 Adding a component to a game normally means writing the class, importing it somewhere,
 adding it to an array the engine receives, and separately telling the editor it exists.
-Four steps, three of them clerical, each one easy to forget.
+Four steps. Three of them are clerical, and each one is easy to forget.
 
 The convention on this page removes all of them. A file with the right name is collected
 into the game automatically, and the decorator on the class registers it with the editor.
@@ -18,14 +18,13 @@ into the game automatically, and the decorator on the class registers it with th
 
 ## Nothing here is built into the engine
 
-Worth saying first, because the rest of the page reads differently once you know it.
-
 The engine takes arrays of classes. It has no glob, no file scanner, and no knowledge of
 your directory layout. What collects the files is your project's own entry point, in a few
 lines you can read and change.
 
-The editor is equally indifferent. It compiles your project with its own bundler, driven by
-regular expressions you can edit, and it asks a file for a default export and nothing more.
+The editor is no different. It compiles your project with its own bundler, driven by
+regular expressions you can edit. It imports every file that matches, and the decorator inside
+the file registers the class as it runs.
 
 So what follows is a convention, not a feature. It is worth keeping because the editor's
 script generation writes files that follow it, but it is yours.
@@ -46,11 +45,14 @@ Two things make a file part of your project.
 | `*.asset.ts` | An asset kind |
 | `*.widget.tsx` | An inspector widget |
 
-These seven are the default patterns in the editor configuration, and every one of them can
-be changed. Nothing is privileged. The generated project happens to collect components,
-systems and behaviors, because that is what most games use, and the rest are collected the
-same way when you need them: one more glob, written the same way as the three that are
-already there.
+The editor configuration holds these patterns in five settings, and you can change every one
+of them. Shaders and filter effects share a setting with behaviors, because the editor treats
+all three as behavior-like classes. The widget setting also matches `.ts`, `.js` and `.jsx`.
+
+Your game's entry point keeps its own list. The
+[starter project](/getting-started/installation/) globs components, systems and behaviors,
+because that is what most games use. The rest are collected the same way when you need them:
+one more glob, written like the three that are already there.
 
 The widget is the one file that never reaches the game. It draws a component's fields in
 the inspector, so it is editor code. See [custom widgets](/game-code/custom-widgets/).
@@ -61,9 +63,11 @@ the inspector, so it is editor code. See [custom widgets](/game-code/custom-widg
 export default class Health extends Component { /* … */ }
 ```
 
-A named export will not be found. Neither will `health.ts`. There is no build error in
-either case; the class is simply absent at run time. A widget file is the exception, because
-it registers itself when it is imported and needs no export at all.
+A file named `health.ts` is not collected at all. A named export is worse, because the two
+sides disagree. The editor imports the file and the decorator registers the class, so the
+component appears in the inspector. Your game's glob reads the default export, finds nothing,
+and the class never reaches the engine. There is no build error in either case. A widget file
+is the exception. It registers itself when it is imported and needs no export at all.
 
 ## Two files found by their path
 
@@ -79,7 +83,7 @@ pattern in the table above.
 
 ## Collecting the files
 
-Here is how the generated project does it. It uses Vite, so it globs with
+Here is how the starter project does it. It uses Vite, so it globs with
 `import.meta.glob`:
 
 ```ts
@@ -142,14 +146,21 @@ resources: {
 ```
 
 :::caution
-Being collected is not the same as running. The glob makes a system **available**; it only
-runs if it is also listed in `systems` in `data/data.json`, and the order of that list
-decides the order systems run in. Components need no such list. A component is live
-wherever an actor carries it.
+Being collected is not the same as running. The glob makes a system **available**, and it runs
+only if `systems` in `data/data.json` also lists it. The order of that list decides the order
+systems run in. See [being collected is not the same as
+running](/getting-started/project-structure/#being-collected-is-not-the-same-as-running) for
+how components and behaviors differ here.
 :::
 
 From the engine's point of view nothing unusual happened. It received arrays of classes,
 exactly as it would have if you had listed them by hand.
+
+A name in the configuration with no class behind it fails differently for each kind. A
+missing system is dropped, and so is a missing behavior. Both write a line to the console,
+`System not found: …` or `Behavior not found: …`, and the rest of the game runs. A missing
+component is not handled. The engine tries to construct a class it does not have, and building
+the actor fails. So a renamed component file breaks the scene rather than leaving a gap in it.
 
 ## What the decorators cost your game
 

@@ -101,6 +101,12 @@ and `game object` unless those are actually different concepts.
 
 Do not introduce synonyms just to avoid repeating a word.
 
+The project `create-dacha` writes is the **starter project**. Not "the generated project" and
+not "the scaffolded project". Never "the template" either, because a template is an actor
+template, which is a different thing. Link the first mention on a page to
+`/getting-started/installation/`. A reader who arrives from a search engine then knows which
+project the page means.
+
 ### 8. Prefer direct explanations over abstract descriptions
 
 Prefer:

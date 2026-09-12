@@ -12,18 +12,18 @@ layer and never looks at an actor. Every hook is optional too, so a system that 
 to events implements neither `update` nor `fixedUpdate`.
 
 Pick the base class by asking whether the system must survive a scene change. If yes,
-`WorldSystem`; if no, `SceneSystem`. [Systems: World vs Scene](/concepts/systems/) has the
-full comparison.
+`WorldSystem`; if no, `SceneSystem`. [Systems](/concepts/systems/) has the full comparison.
 
 ## A complete system
 
 ```ts
 import { ActorQuery, SceneSystem, CharacterBody } from 'dacha';
-import type { Scene, SceneSystemOptions, Time } from 'dacha';
+import type { Scene, SceneSystemOptions } from 'dacha';
 import { DefineSystem } from 'dacha-workbench/decorators';
 
 import Movement from '../../components/movement/movement.component';
-import { MovementEvent } from '../../events';
+import { MoveRequest } from '../../events';
+import type { MoveRequestEvent } from '../../events';
 
 @DefineSystem({
   name: 'MovementSystem',
@@ -31,64 +31,52 @@ import { MovementEvent } from '../../events';
 export default class MovementSystem extends SceneSystem {
   private scene: Scene;
   private actorQuery: ActorQuery;
-  private time: Time;
 
   constructor(options: SceneSystemOptions) {
     super();
 
     this.scene = options.scene;
-    this.time = options.time;
 
     this.actorQuery = new ActorQuery({
       scene: options.scene,
       filter: [Movement, CharacterBody],
     });
 
-    this.scene.addEventListener(MovementEvent, this.handleMovement);
+    this.scene.addEventListener(MoveRequest, this.handleMoveRequest);
   }
 
   onSceneDestroy(): void {
-    this.scene.removeEventListener(MovementEvent, this.handleMovement);
+    this.scene.removeEventListener(MoveRequest, this.handleMoveRequest);
   }
 
-  private handleMovement = (event: MovementEvent): void => {
+  private handleMoveRequest = (event: MoveRequestEvent): void => {
     const movement = event.target.getComponent(Movement);
     if (!movement) {
       return;
     }
-    // record the requested direction
+
+    movement.direction = event.direction;
   };
 
   fixedUpdate(): void {
     for (const actor of this.actorQuery.getActors()) {
       const movement = actor.getComponent(Movement);
       const body = actor.getComponent(CharacterBody);
-      // apply movement
+
+      body.velocity.x = movement.direction * movement.speed;
     }
   }
 }
 ```
 
-Four things in that file are worth more than the code shows.
+That file follows three rules [the systems page](/concepts/systems/) explains in full. The
+query is built once and kept. It is never destroyed, because it dies with its scene. The
+listener added in the constructor comes off in `onSceneDestroy`, which matters most for a
+listener you put on the **world**, since that one outlives the system.
 
-**The query is built once**, in the constructor, and kept. It stays current as actors are
-added and removed, so rebuilding it every frame is wasted work. `getActors()` returns a
-`Set`.
-
-**The listener added in the constructor is removed in `onSceneDestroy`.** Subscriptions are
-the thing that leaks, and a listener on a target that outlives the system is the case to
-watch. This one is on the scene, which dies with the system, so removing it is hygiene
-rather than a fix. Put the same listener on the **world** and you get a second copy of it
-every time the level reloads. See
-[removing listeners](/concepts/events/#removing-listeners).
-
-**The query is not destroyed, and does not need to be.** An `ActorQuery` is a set of
-listeners on its scene, so it goes away when the scene does. `destroy()` is for a query that
-stops being used while its scene is still alive, such as one you rebuild after a setting
-changes.
-
-**Movement sits in `fixedUpdate`, not `update`.** Anything whose outcome must not depend on
-frame rate goes on the fixed clock. See [the game loop](/concepts/game-loop/).
+One detail is a choice rather than a rule. **Movement sits in `fixedUpdate`, not `update`.**
+Anything whose outcome must not depend on frame rate goes on the fixed clock. See
+[the game loop](/concepts/game-loop/).
 
 ## Settings you can change in the editor
 
@@ -143,6 +131,8 @@ their own.
 memory before the first frame:
 
 ```ts
+private level?: LevelData;
+
 async onSceneLoad(): Promise<void> {
   const response = await fetch('/data/levels/forest.json');
   this.level = (await response.json()) as LevelData;

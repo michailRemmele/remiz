@@ -85,6 +85,11 @@ Methods are fine. A helper that keeps two fields consistent, or a getter that de
 value from them, is still state with a convenient surface on it. What a component cannot be
 is a place for work that has to run on its own.
 
+A component can look around from where it sits. `this.actor` is the actor the component is
+attached to, and the engine sets it on attachment. `getParentComponent()` returns the same
+component class from the parent actor, or `undefined` when the parent has none. Both are for
+reading the hierarchy, not for running work of your own.
+
 A component with no fields at all is still useful. It marks an actor, and a query finds the
 actor by that mark. The engine's own `Behaviors` is close to this, and a `Player` marker is
 the kind you might write.

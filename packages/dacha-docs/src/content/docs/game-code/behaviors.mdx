@@ -67,16 +67,19 @@ export default class GrowPlant extends Behavior {
 }
 ```
 
-Three things in that file differ from a system.
+A behavior differs from a system in three places.
 
 **`options.actor`** is the actor this instance belongs to. It is the whole reason to write a
 behavior instead of a system, and it is always there. A behavior is never built without one.
 
-**`update`, `fixedUpdate` and `destroy` are all optional.** The base class declares nothing
-else, and the behavior system calls only the methods you wrote.
+**The lifecycle is shorter.** A behavior has `update`, `fixedUpdate` and `destroy`, and
+nothing else. All three are optional, the way a system's hooks are. What is missing are the
+scene hooks. There is no `onSceneLoad`, so a behavior is not the place to load resources, and
+`destroy` is the one hook a system has no equivalent of.
 
-**`@DefineField` works exactly as it does on a component.** Each decorated property becomes
-an editable field on the attachment, and its value arrives in the options object.
+**The fields belong to the attachment, not to the class.** A system's fields are edited once,
+in the systems list. A behavior's fields are edited on the actor that carries it, so two actors
+can run the same behavior with different values. The values arrive in the options object.
 [Inspector fields](/game-code/inspector-fields/) covers the widgets and the options they
 take.
 
@@ -153,7 +156,7 @@ with the behaviors the template carries.
 <PanelShot
   src={behaviorsShot}
   alt="The inspector showing a Behaviors component with two behaviors attached. The first, Turret Control, is expanded and shows four numeric fields."
-  caption="Two behaviors on one template. Turret Control is expanded, and the four fields under it are its decorated properties."
+  caption="Two behaviors on one template. Turret Control is expanded, and the four fields under it are its decorated properties. Build Pickable declares no fields. The Add Behavior control at the bottom is the list you pick from."
 />
 
 By hand, the same thing is one entry in the configuration:
@@ -175,23 +178,11 @@ By hand, the same thing is one entry in the configuration:
 
 ## Registering them
 
-A behavior is neither a system nor a component, so it does not go in either array. It is a
-resource belonging to the behavior system:
-
-```ts
-const engine = new Engine({
-  config,
-  systems: [Renderer, BehaviorSystem, ...gameSystems],
-  components: [Transform, Sprite, Behaviors, ...gameComponents],
-  assets: [Texture],
-  resources: {
-    [BehaviorSystem.systemName]: [...gameBehaviors],
-  },
-});
-```
-
-The generated project already does this, and the `*.behavior.ts` suffix is what fills
-`gameBehaviors`. See [how scripts are found](/game-code/auto-registration/).
+A behavior is neither a system nor a component, so it does not go in either array. It reaches
+the engine as a resource belonging to the behavior system. The `*.behavior.ts` suffix collects
+the class and the [starter project](/getting-started/installation/) passes it on, so there is
+nothing to do by hand. See [how scripts are found](/game-code/auto-registration/) for the code
+that does it.
 
 :::caution
 `BehaviorSystem` must also be listed in `systems` in the configuration. If it is not, no
@@ -205,11 +196,5 @@ A behavior instance exists per actor, and so does its work. Ten thousand actors 
 behavior means ten thousand `update` calls, where a system would do one pass over one query.
 
 The question to ask is not about performance, though. It is about what the logic is *about*.
-A door that opens when the player comes close, a camera that follows one target, a boss
-running a scripted sequence: each of these is about one actor, and each is awkward to write as
-a system that queries exactly one thing. Damage, movement and collision response are about a
-class of actors, and belong in a system.
-
-[Where to put a piece of logic](/concepts/ecs/#where-to-put-a-piece-of-logic) has the short
-version as a table, and [the behavior system](/systems/behaviors/) covers the machinery from
-the other side.
+Logic that is specific to one actor is awkward to write as a system.
+Systems are a better fit for logic that applies to a class of actors, such as damage, movement, or collision response.

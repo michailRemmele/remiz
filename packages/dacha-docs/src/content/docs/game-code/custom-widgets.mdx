@@ -3,6 +3,8 @@ title: "Custom widgets"
 description: "Replace a component's generated inspector panel with a React component of your own."
 ---
 
+import WidgetStore from '../../../components/diagrams/WidgetStore.astro';
+
 The [field decorator](/game-code/inspector-fields/) generates a panel: one labelled input
 per field, top to bottom. That covers most components. When it stops being enough, you
 replace the whole panel with a component of your own.
@@ -33,27 +35,20 @@ import {
 } from 'dacha-workbench';
 import type { WidgetProps } from 'dacha-workbench';
 
-const PRESETS: Record<string, { points: number; armour: number }> = {
-  grunt: { points: 30, armour: 0 },
-  brute: { points: 200, armour: 5 },
-};
-
 const HealthWidget: FC<WidgetProps> = ({ path, fields, sections }) => {
   const { dispatch } = useCommander();
-  const [preset, setPreset] = useState<string | null>(null);
+  const [preset, setPreset] = useState<string | null>('grunt');
 
   const points = useConfig(path.concat('points')) as number;
 
   const applyPreset = (name: string | null): void => {
     setPreset(name);
 
-    const values = name ? PRESETS[name] : undefined;
-    if (!values) {
-      return;
-    }
+    const brute = name === 'brute';
 
-    dispatch(commands.setValue(path.concat('points'), values.points));
-    dispatch(commands.setValue(path.concat('armour'), values.armour, true));
+    dispatch(commands.setValue(path.concat('points'), brute ? 200 : 30));
+    // `true` joins this write to the one above, so one undo takes back both
+    dispatch(commands.setValue(path.concat('armour'), brute ? 5 : 0, true));
   };
 
   return (
@@ -61,7 +56,6 @@ const HealthWidget: FC<WidgetProps> = ({ path, fields, sections }) => {
       <LabelledSelect
         label="Preset"
         value={preset}
-        allowEmpty
         options={[
           { title: 'Grunt', value: 'grunt' },
           { title: 'Brute', value: 'brute' },
@@ -79,7 +73,7 @@ const HealthWidget: FC<WidgetProps> = ({ path, fields, sections }) => {
 defineWidget('Health')(HealthWidget);
 ```
 
-Three things in that file are worth pointing at.
+Three rules are doing the work in that file.
 
 **The name passed to `defineWidget` is the component's name**, the same string
 `@DefineComponent` was given. That is the only link between the two. Systems and behaviors work
@@ -110,6 +104,8 @@ holds one. What a widget edits is the project's configuration, the same JSON the
 later build the component from. The editor keeps that configuration in one store, and every
 panel is a view onto a part of it.
 
+<WidgetStore />
+
 `path` is the address of this component's part, as an array of keys:
 
 ```tsx
@@ -129,15 +125,21 @@ in the project, such as the sorting layers a field wants to
 ## Reading and writing values
 
 `useConfig(path)` reads the value at a path and subscribes to it. The widget re-renders when
-that value changes, whoever changed it: your own dispatch, another panel, an undo.
+that value changes, whoever changed it: your own write, another panel, an undo.
 
-Writes go through a command:
+Writes go through a command, dispatched by the hook that owns the undo history:
 
 ```tsx
+const { dispatch } = useCommander();
+
 dispatch(commands.setValue(path.concat('points'), 120));
 ```
 
 `setValue` replaces a value, `addValue` appends to a list, and `deleteValue` removes an entry.
+
+The preset in the example writes this way, and the readout under it reads the same value back.
+Pick a preset and the number of hits changes, because `useConfig` re-renders the widget when
+the value it watches changes.
 
 It matters that these are commands rather than assignments. The editor never writes into the
 configuration directly. Each command applies the change and hands back the function that
@@ -145,22 +147,17 @@ reverses it, and the store keeps that pair on an undo stack a hundred entries de
 walks that stack backwards and redo walks it forwards. So a value written through a command
 is a value that can be taken back, and a value written any other way is not.
 
-Assigning into the object you read from `useConfig` looks like it works and fails twice over.
-The change cannot be undone, because nothing recorded how to reverse it. And nothing
-re-renders, because the store notifies its listeners from inside `set`, and you went around
-it.
-
 ### Several writes, one undo
 
 The preset in the example writes two fields. Left alone that would be two entries on the undo
 stack, and one undo would leave half a preset behind.
 
-Passing `true` as the third argument attaches a change to the previous one instead of starting
-a new entry:
+Passing `true` as the third argument attaches a write to the previous one instead of starting
+a new entry. The two become a single step in the history:
 
 ```tsx
-dispatch(commands.setValue(path.concat('points'), values.points));
-dispatch(commands.setValue(path.concat('armour'), values.armour, true));
+dispatch(commands.setValue(path.concat('points'), brute ? 200 : 30));
+dispatch(commands.setValue(path.concat('armour'), brute ? 5 : 0, true));
 ```
 
 Undo now reverses both, in reverse order, as one step. The first write in a group is always
@@ -191,7 +188,6 @@ loads the new bundle, and redraws the inspector with it.
 One consequence is worth knowing before it surprises you. That reload also re-checks the saved
 configuration against the current schemas. If the check has to fix anything, which is what
 happens when you add a field to a component, the editor clears the undo history along with it.
-Work you wanted to undo, undo before you save a schema change.
 
 ## How the file reaches the editor
 

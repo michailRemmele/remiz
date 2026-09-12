@@ -3,7 +3,7 @@ import DiagramFigure from './DiagramFigure.astro';
 ---
 
 <DiagramFigure
-  caption="One file, two consumers. The bundler collects it by file-name pattern, and the editor reads its decorator."
+  caption="One file, two consumers. The bundler collects it by file-name pattern, and its decorator registers it with the editor."
 >
   <svg viewBox="0 0 720 340" role="img" xmlns="http://www.w3.org/2000/svg">
     <title>
@@ -28,7 +28,7 @@ import DiagramFigure from './DiagramFigure.astro';
 
       <rect x="20" y="256" width="270" height="68" rx="8" fill="var(--diagram-fill)" />
       <text x="155" y="280" fill="var(--diagram-text)" text-anchor="middle" stroke="none">Game bundle</text>
-      <text x="155" y="298" fill="var(--diagram-text)" text-anchor="middle" stroke="none" font-size="11">require.context matches the suffix</text>
+      <text x="155" y="298" fill="var(--diagram-text)" text-anchor="middle" stroke="none" font-size="11">a glob matches the suffix</text>
       <text x="155" y="314" fill="var(--diagram-text)" text-anchor="middle" stroke="none" font-size="11">class reaches the Engine</text>
 
       <rect x="430" y="256" width="270" height="68" rx="8" fill="var(--diagram-fill)" />

@@ -23,17 +23,12 @@ speed: number;
 
 That is a field named `speed`, labelled **Speed**, starting at `0`.
 
-<PanelShot
-  src={inspectorShot}
-  alt="The inspector showing the Platform Block, Transform and Weapon components of a selected actor, each with its own fields."
-  caption="Components written for a project sit in the inspector next to the built-in ones. Every label here was generated from a property name."
-/>
-
 :::caution
 The bare form reads the property's type from the metadata TypeScript emits, and it
-recognises only `string`, `number` and `boolean`. Anything else becomes a text input. The
-metadata needs `emitDecoratorMetadata` in your `tsconfig.json`, which the generated project
-already sets. Passing `type` explicitly settles the question either way.
+recognises only `string`, `number` and `boolean`. Anything else becomes a text input.
+Decorators need `experimentalDecorators` in your `tsconfig.json`, and this metadata needs
+`emitDecoratorMetadata`. The [starter project](/getting-started/installation/) sets both.
+Passing `type` explicitly settles the question either way.
 :::
 
 ## Choosing the widget
@@ -59,14 +54,15 @@ volume: number;
 | `asset` | A dropdown of the project's assets of one kind | `kind` |
 | `data` | Nothing at all | |
 
-A `file` field stores a path relative to the project's assets root. An `asset` field stores
-the asset's id, and shows only the assets whose kind matches. A slider without `min`, `max`
-and `step` runs from 0 to 100 in steps of 1.
+`options`, `extensions` and `kind` are required by the types that take them. Everything else
+in that column is optional. A `file` field stores a path relative to the project's assets
+root. An `asset` field stores the asset's id, and shows only the assets whose kind matches. A
+slider without `min`, `max` and `step` runs from 0 to 100 in steps of 1.
 
-`data` is the odd one. The field is saved and restored like any other, and the inspector
-never draws it. Use it for state that belongs in the configuration but that no generated
-input should show, such as a value only a [custom widget](/game-code/custom-widgets/)
-maintains.
+`data` is different from the rest. The field is saved and restored like any other, and the
+inspector never draws it. Use it for state that belongs in the configuration but that no
+generated input should show, such as a value only a
+[custom widget](/game-code/custom-widgets/) maintains.
 
 ## Initial values
 
@@ -113,6 +109,12 @@ spot. The path to that file is a setting in the
 Section names are not translated. They are run through the same name formatter and shown as
 they are.
 
+<PanelShot
+  src={inspectorShot}
+  alt="The inspector showing the Platform Block, Transform and Weapon components of a selected actor, each with its own fields."
+  caption="Every label here was generated from a property name. Components written for a project sit in the inspector next to the built-in ones."
+/>
+
 ## Grouping fields into sections
 
 A component with many fields reads better in groups. `section` puts a field in one, and the
@@ -120,12 +122,12 @@ decorator says which sections start open:
 
 ```ts
 @DefineComponent({
-  name: 'Weapon',
+  name: 'Launcher',
   sections: {
     projectile: { defaultOpen: true },
   },
 })
-export default class Weapon extends Component {
+export default class Launcher extends Component {
   @DefineField({ initialValue: 1.2 })
   cooldown: number;
 
@@ -137,7 +139,10 @@ export default class Weapon extends Component {
 }
 ```
 
-Fields with no `section` stay at the top level, above the groups.
+The inspector draws fields in the order you declare them. A run of neighbouring fields with
+the same `section` becomes one group, and a field without a `section` ends that run. So
+declaring the same section name again further down draws a second group with the same title.
+Keep the fields of one section together.
 
 ## Showing a field only when it matters
 
@@ -162,8 +167,10 @@ where most of the inputs do nothing.
 :::note
 When the value you compare against is a string, the editor treats it as a **regular
 expression**. So `value: 'rectangle|roundRectangle'` shows the field for either one. That is
-handy on purpose, but it also means a value with regular expression characters in it does not
-compare the way you expect.
+handy on purpose, and it has two consequences. The expression is not anchored, so
+`value: 'circle'` also matches `semicircle`. And a value with regular expression characters in
+it does not compare the way you expect. Write `value: '^circle$'` when you mean the whole
+value.
 :::
 
 A hidden field is not saved. The editor deletes the value when the condition stops matching,
@@ -186,8 +193,10 @@ layer: string;
 ```
 
 The function receives a reader over the project's configuration, so the list can come from
-anywhere in it. The built-in components use this to offer the sorting layers, the audio groups
-and the collision groups the project actually defines, rather than a list that goes stale.
+anywhere in it. A second argument carries the field's own `path` and whatever `context` the
+widget was drawn with. The built-in components use this to offer the sorting layers, the
+audio groups and the collision groups the project actually defines, rather than a list that
+goes stale.
 
 ## Declaring fields on the decorator
 
@@ -203,9 +212,9 @@ Fields can also be listed on the decorator itself, instead of on the properties:
 })
 ```
 
-The two forms merge, and the decorator's list wins on a name collision. Reach for it when
-there is no property to decorate, which happens with a `data` field or when a widget stores
-something the class does not hold as a plain property.
+The two forms merge, and a property's own `@DefineField` wins on a name collision. Reach for
+the decorator's list when there is no property to decorate. That happens with a `data` field,
+or when a widget stores something the class does not hold as a plain property.
 
 `icon` sets the badge next to the component's name in the inspector, from the
 [Gravity UI icon set](https://gravity-ui.com/icons). `title` overrides the component's

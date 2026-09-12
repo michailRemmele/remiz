@@ -104,8 +104,8 @@ These live under the `performance` entry in [`globalOptions`](/concepts/configur
 | `maxFixedUpdatesPerFrame` | 5 | Ceiling on catch-up steps in one frame |
 
 :::note
-A generated project's configuration carries `maxFPS: 0`. Zero and the engine's internal default
-both mean uncapped.
+The configuration in the [starter project](/getting-started/installation/) carries `maxFPS: 0`.
+Zero and the engine's internal default both mean uncapped.
 
 A cap does not slow a frame down. It skips whole iterations of the loop, and on a skipped
 iteration nothing runs at all, event delivery included.
