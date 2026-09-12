@@ -5,7 +5,6 @@ const path = require('path');
 const fs = require('fs');
 const { Command } = require('commander');
 
-const init = require('./init');
 const { getExecPath } = require('./utils/get-app-paths');
 
 const isDev = process.env.NODE_ENV === 'development';
@@ -13,11 +12,6 @@ const isDev = process.env.NODE_ENV === 'development';
 const program = new Command();
 
 program.description('CLI to GUI editor for Dacha game engine');
-
-program
-  .command('init')
-  .description('Create initial project structure to run editor')
-  .action(init);
 
 program
   .option(
